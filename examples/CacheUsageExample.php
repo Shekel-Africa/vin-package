@@ -16,26 +16,26 @@ $vin = new Vin('1HGCM82633A004352', null, $cache);
 // First request will hit the API
 echo "First request (API call)...\n";
 $startTime = microtime(true);
-$info = $vin->getVehicleInfo();
+$vehicleInfo = $vin->getVehicleInfo();
 $endTime = microtime(true);
 echo "Time taken: " . round(($endTime - $startTime) * 1000, 2) . " ms\n";
-echo "Make: " . $info['make'] . ", Model: " . $info['model'] . "\n\n";
+echo "Make: " . $vehicleInfo->getMake() . ", Model: " . $vehicleInfo->getModel() . "\n\n";
 
 // Second request should use cache
 echo "Second request (should use cache)...\n";
 $startTime = microtime(true);
-$info = $vin->getVehicleInfo();
+$vehicleInfo = $vin->getVehicleInfo();
 $endTime = microtime(true);
 echo "Time taken: " . round(($endTime - $startTime) * 1000, 2) . " ms\n";
-echo "Make: " . $info['make'] . ", Model: " . $info['model'] . "\n\n";
+echo "Make: " . $vehicleInfo->getMake() . ", Model: " . $vehicleInfo->getModel() . "\n\n";
 
 // Force fresh data by skipping cache
 echo "Third request (force skip cache)...\n";
 $startTime = microtime(true);
-$info = $vin->getVehicleInfo(true); // Skip cache
+$vehicleInfo = $vin->getVehicleInfo(true); // Skip cache
 $endTime = microtime(true);
 echo "Time taken: " . round(($endTime - $startTime) * 1000, 2) . " ms\n";
-echo "Make: " . $info['make'] . ", Model: " . $info['model'] . "\n\n";
+echo "Make: " . $vehicleInfo->getMake() . ", Model: " . $vehicleInfo->getModel() . "\n\n";
 
 // Example 2: Using PSR-16 SimpleCache adapter (Redis example)
 echo "Example 2: Using PSR-16 adapter (pseudocode)\n";
@@ -59,4 +59,5 @@ echo "}\n\n";
 echo "// Use Redis cache with VIN package\n";
 echo "\$redisCache = new RedisCacheAdapter(\$redisClient);\n";
 echo "\$vin = new \\Shekel\\VinPackage\\Vin('WVWZZZ3BZWE689725', null, \$redisCache, 86400);\n";
-echo "\$info = \$vin->getVehicleInfo(); // Will be cached in Redis for 24 hours\n";
+echo "\$vehicleInfo = \$vin->getVehicleInfo(); // Will be cached in Redis for 24 hours\n";
+echo "echo \"Make: \" . \$vehicleInfo->getMake() . \", Model: \" . \$vehicleInfo->getModel();\n";

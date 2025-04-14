@@ -3,113 +3,71 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Shekel\VinPackage\Vin;
-use Shekel\VinPackage\Examples\ArrayVinCache;
+use Shekel\VinPackage\Decoders\LocalVinDecoder;
 
-/**
- * This example demonstrates:
- * 1. Local fallback decoding when API fails
- * 2. Prioritizing API calls for previously locally-decoded VINs
- * 3. How to check if data was locally decoded
- */
+echo "Local VIN Decoding Examples\n";
+echo "==========================\n\n";
 
-// Create a cache implementation
-$cache = new ArrayVinCache(3600); // Cache for 1 hour
+// Example 1: Decoding VIN using the local decoder only
+echo "Example 1: Local VIN decoding only\n";
+echo "--------------------------------\n";
 
-// Create a VIN instance with local fallback enabled
-$vin = new Vin('1HGCM82633A004352', null, $cache, null, true);
+$vin = new Vin('1HGCM82633A004352');
 
-echo "Example: Local Fallback and API Prioritization\n";
-echo "-------------------------------------------\n\n";
+// Get vehicle information using local decoder only
+$vehicleInfo = $vin->getLocalVehicleInfo();
 
-// Simulate API failure by intentionally invalidating the API URL
-$decoderService = $vin->getDecoderService();
-$reflection = new ReflectionClass($decoderService);
-$apiUrlProperty = $reflection->getProperty('apiBaseUrl');
-$apiUrlProperty->setAccessible(true);
-$apiUrlProperty->setValue($decoderService, 'https://invalid-url-that-will-fail.example/api/');
+echo "VIN: 1HGCM82633A004352\n";
+echo "Year: " . $vehicleInfo->getYear() . "\n";
+echo "Make: " . $vehicleInfo->getMake() . "\n";
+echo "Country: " . $vehicleInfo->getCountry() . "\n";
+echo "Plant: " . $vehicleInfo->getPlant() . "\n";
+echo "Model" . $vehicleInfo->getModel() . "\n\n";
 
-// First attempt - API will fail, should use local decoder
-echo "1. First attempt (API will fail, should use local decoder)...\n";
-try {
-    $info = $vin->getVehicleInfo();
-    echo "   Data source: " . ($vin->isLocallyDecoded($info) ? "LOCAL DECODER" : "API") . "\n";
-    echo "   Make: " . ($info['make'] ?? 'Unknown') . "\n";
-    echo "   Year: " . ($info['year'] ?? 'Unknown') . "\n\n";
-} catch (Exception $e) {
-    echo "   ERROR: " . $e->getMessage() . "\n\n";
-}
+// Example 2: Using Vin class with local fallback
+echo "Example 2: Using Vin with local fallback\n";
+echo "-------------------------------------\n";
 
-// Second attempt - Should use cached locally-decoded data
-echo "2. Second attempt (should use cached locally-decoded data)...\n";
-try {
-    $info = $vin->getVehicleInfo();
-    echo "   Data source: " . ($vin->isLocallyDecoded($info) ? "LOCAL DECODER" : "API") . "\n";
-    echo "   Make: " . ($info['make'] ?? 'Unknown') . "\n";
-    echo "   Year: " . ($info['year'] ?? 'Unknown') . "\n\n";
-} catch (Exception $e) {
-    echo "   ERROR: " . $e->getMessage() . "\n\n";
-}
+// Create Vin with local fallback enabled (default)
+$vin = new Vin('5YJSA1E11FF000000');
 
-// Third attempt - Force API refresh (will fail again)
-echo "3. Third attempt (force API refresh, will fail again and use local)...\n";
-try {
-    $info = $vin->getVehicleInfo(false, true);
-    echo "   Data source: " . ($vin->isLocallyDecoded($info) ? "LOCAL DECODER" : "API") . "\n";
-    echo "   Make: " . ($info['make'] ?? 'Unknown') . "\n";
-    echo "   Year: " . ($info['year'] ?? 'Unknown') . "\n\n";
-} catch (Exception $e) {
-    echo "   ERROR: " . $e->getMessage() . "\n\n";
-}
+// Try to get full vehicle info (will use API if available, local decoder as fallback)
+$vehicleInfo = $vin->getVehicleInfo();
 
-// Restore the API URL to working one
-$apiUrlProperty->setValue($decoderService, 'https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/');
+echo "VIN: 5YJSA1E11FF000000\n";
+echo "Year: " . $vehicleInfo->getYear() . "\n";
+echo "Make: " . $vehicleInfo->getMake() . "\n";
+echo "Model: " . ($vehicleInfo->getModel() ?? "Model not available locally") . "\n";
 
-// Fourth attempt - Force API refresh (should succeed now)
-echo "4. Fourth attempt (force API refresh with valid API URL)...\n";
-try {
-    $info = $vin->getVehicleInfo(false, true);
-    echo "   Data source: " . ($vin->isLocallyDecoded($info) ? "LOCAL DECODER" : "API") . "\n";
-    echo "   Make: " . ($info['make'] ?? 'Unknown') . "\n";
-    echo "   Year: " . ($info['year'] ?? 'Unknown') . "\n\n";
-} catch (Exception $e) {
-    echo "   ERROR: " . $e->getMessage() . "\n\n";
-}
+// Example 3: Using new helper methods
+echo "\nExample 3: Using helper methods\n";
+echo "----------------------------\n";
 
-// Fifth attempt - Should use cached API data
-echo "5. Fifth attempt (should use cached API data)...\n";
-try {
-    $info = $vin->getVehicleInfo();
-    echo "   Data source: " . ($vin->isLocallyDecoded($info) ? "LOCAL DECODER" : "API") . "\n";
-    echo "   Make: " . ($info['make'] ?? 'Unknown') . "\n";
-    echo "   Year: " . ($info['year'] ?? 'Unknown') . "\n\n";
-} catch (Exception $e) {
-    echo "   ERROR: " . $e->getMessage() . "\n\n";
-}
+$vin = new Vin('WVWZZZ3BZWE689725');
 
-// Example of directly using local decoder
-echo "6. Using local decoder directly (no API call)...\n";
-try {
-    $info = $vin->getLocalVehicleInfo();
-    echo "   Data source: " . ($vin->isLocallyDecoded($info) ? "LOCAL DECODER" : "API") . "\n";
-    echo "   Make: " . ($info['make'] ?? 'Unknown') . "\n";
-    echo "   Year: " . ($info['year'] ?? 'Unknown') . "\n\n";
-} catch (Exception $e) {
-    echo "   ERROR: " . $e->getMessage() . "\n\n";
-}
+echo "VIN: WVWZZZ3BZWE689725\n";
+echo "Model Year: " . $vin->getModelYear() . "\n";
+echo "Manufacturer: " . $vin->getManufacturerInfo() . "\n";
 
-// Disable local fallback
+// Check if the VIN was locally decoded
+echo "Is locally decoded: " . ($vin->isLocallyDecoded() ? "Yes" : "No") . "\n";
+
+// Example 4: Disable local fallback
+echo "\nExample 4: Disabling local fallback\n";
+echo "-------------------------------\n";
+
+$vin = new Vin('1FTFW1ET5DFA30440');
 $vin->setLocalFallback(false);
 
-// Restore the API URL to invalid one
-$apiUrlProperty->setValue($decoderService, 'https://invalid-url-that-will-fail.example/api/');
-
-// Attempt with local fallback disabled
-echo "7. Attempt with local fallback disabled (should fail)...\n";
+echo "VIN: 1FTFW1ET5DFA30440\n";
+echo "Local fallback disabled\n";
 try {
-    $info = $vin->getVehicleInfo(true); // Skip cache
-    echo "   Data source: " . ($vin->isLocallyDecoded($info) ? "LOCAL DECODER" : "API") . "\n";
-    echo "   Make: " . ($info['make'] ?? 'Unknown') . "\n";
-    echo "   Year: " . ($info['year'] ?? 'Unknown') . "\n\n";
+    $vehicleInfo = $vin->getVehicleInfo();
+    echo "Make: " . $vehicleInfo->getMake() . ", Model: " . $vehicleInfo->getModel() . "\n";
 } catch (Exception $e) {
-    echo "   ERROR: " . $e->getMessage() . "\n\n";
+    echo "Error: " . $e->getMessage() . " (API may be unavailable)\n";
+    echo "Setting fallback to true...\n";
+    $vin->setLocalFallback(true);
+    $vehicleInfo = $vin->getVehicleInfo();
+    echo "Make: " . $vehicleInfo->getMake() . " (from local decoder)\n";
 }
