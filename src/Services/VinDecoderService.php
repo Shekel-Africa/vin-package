@@ -81,6 +81,12 @@ class VinDecoderService
         
         // Initialize local decoder
         $this->localDecoder = new LocalVinDecoder();
+        
+        // Pass the cache to the local decoder if available
+        if ($cache) {
+            $this->localDecoder->setCache($cache);
+        }
+        
         $this->useLocalFallback = $useLocalFallback;
     }
 
@@ -131,7 +137,7 @@ class VinDecoderService
                 throw new \Exception("Failed to decode VIN: Invalid API response format");
             }
 
-            $result = $this->formatVehicleData($data['Results']);
+            $result = $this->formatVehicleData($data['Results'], $vin);
             
             // Mark as API-decoded
             $result['additional_info']['decoded_by'] = 'nhtsa_api';
@@ -190,9 +196,10 @@ class VinDecoderService
      * Format the API response into a more user-friendly structure
      * 
      * @param array $results
+     * @param string $vin Original VIN for extracting WMI
      * @return array
      */
-    private function formatVehicleData(array $results): array
+    private function formatVehicleData(array $results, string $vin): array
     {
         $vehicle = [
             'make' => null,
@@ -206,11 +213,35 @@ class VinDecoderService
             'transmission' => null,
             'manufacturer' => null,
             'country' => null,
-            'additional_info' => []
+            'additional_info' => [],
+            'validation' => [
+                'error_code' => null,
+                'error_text' => null,
+                'is_valid' => true
+            ]
         ];
+
+        // Extract WMI from the VIN (first 3 characters)
+        $wmi = substr($vin, 0, 3);
+        $vehicle['additional_info']['WMI'] = $wmi;
 
         // Extract relevant data from the API response
         foreach ($results as $item) {
+            // Extract error code and text for validation
+            if ($item['Variable'] === 'Error Code') {
+                $vehicle['validation']['error_code'] = $item['Value'];
+                // If error code is not 0, mark as invalid
+                if ($item['Value'] !== '0' && !empty($item['Value'])) {
+                    $vehicle['validation']['is_valid'] = false;
+                }
+                continue;
+            }
+
+            if ($item['Variable'] === 'Error Text') {
+                $vehicle['validation']['error_text'] = $item['Value'];
+                continue;
+            }
+            
             if (!isset($item['Value']) || $item['Value'] === null || $item['Value'] === '') {
                 continue;
             }
@@ -257,7 +288,32 @@ class VinDecoderService
             }
         }
 
+        // If we have manufacturer name and WMI, enhance local database
+        if (!empty($vehicle['manufacturer'])) {
+            $this->enhanceLocalManufacturerDatabase($wmi, $vehicle['manufacturer']);
+        } 
+        else if (!empty($vehicle['make'])) {
+            $this->enhanceLocalManufacturerDatabase($wmi, $vehicle['make']);
+        }
+        // If we have make name and WMI, use that instead for enhancing the database
+
         return $vehicle;
+    }
+
+    /**
+     * Enhance the local manufacturer database with data from NHTSA
+     * 
+     * @param string $wmi
+     * @param string $manufacturerName
+     * @return void
+     */
+    private function enhanceLocalManufacturerDatabase(string $wmi, string $manufacturerName): void
+    {
+        // Only use the first 3 characters of the WMI
+        $wmi = substr($wmi, 0, 3);
+        
+        // Add to the local decoder's manufacturer database
+        $this->localDecoder->addManufacturerCode($wmi, $manufacturerName);
     }
 
     /**

@@ -67,6 +67,11 @@ class VehicleInfo
      * @var array Additional information not covered by standard properties
      */
     private array $additionalInfo;
+    
+    /**
+     * @var array|null Validation information from NHTSA
+     */
+    private ?array $validation;
 
     /**
      * Create a new VehicleInfo object from an array of data
@@ -90,6 +95,11 @@ class VehicleInfo
         $instance->manufacturer = $data['manufacturer'] ?? null;
         $instance->country = $data['country'] ?? null;
         $instance->additionalInfo = $data['additional_info'] ?? [];
+        $instance->validation = $data['validation'] ?? [
+            'error_code' => null,
+            'error_text' => null,
+            'is_valid' => true
+        ];
         
         return $instance;
     }
@@ -114,6 +124,7 @@ class VehicleInfo
             'manufacturer' => $this->manufacturer,
             'country' => $this->country,
             'additional_info' => $this->additionalInfo,
+            'validation' => $this->validation,
         ];
     }
 
@@ -257,5 +268,45 @@ class VehicleInfo
     public function isLocallyDecoded(): bool
     {
         return ($this->additionalInfo['decoded_by'] ?? '') === 'local_decoder';
+    }
+
+    /**
+     * Get validation information for the VIN
+     * 
+     * @return array|null
+     */
+    public function getValidation(): ?array
+    {
+        return $this->validation;
+    }
+    
+    /**
+     * Check if the VIN is valid according to NHTSA
+     * 
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        return $this->validation['is_valid'] ?? true;
+    }
+    
+    /**
+     * Get the error code from NHTSA validation
+     * 
+     * @return string|null
+     */
+    public function getErrorCode(): ?string
+    {
+        return $this->validation['error_code'] ?? null;
+    }
+    
+    /**
+     * Get the error text from NHTSA validation
+     * 
+     * @return string|null
+     */
+    public function getErrorText(): ?string
+    {
+        return $this->validation['error_text'] ?? null;
     }
 }

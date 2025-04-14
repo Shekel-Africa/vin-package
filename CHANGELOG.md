@@ -12,11 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Strongly typed properties for all vehicle attributes (make, model, year, etc.)
 - Backward compatibility with array format through `toArray()` method
 - Helper methods for accessing additional information fields
+- Extraction of error code and error text from NHTSA API responses for VIN validation
+- New validation information in `VehicleInfo` with `isValid()`, `getErrorCode()`, and `getErrorText()` methods
+- Expanded manufacturer WMI codes database with over 70 global manufacturers
+- Dynamic learning and caching of manufacturer codes from NHTSA API responses
+- Auto-enhancement of local manufacturer database based on API responses
+- Runtime collection of manufacturer codes combining built-in and cached codes
+- Direct WMI extraction from VIN to pair with manufacturer data from NHTSA
+
+### Changed
+- Improved manufacturer code caching with separate runtime collection
+- Modified LocalVinDecoder to use cached manufacturer codes without Reflection API
+- Enhanced VinDecoderService to extract WMI directly from VIN instead of relying on NHTSA response
 
 ### Fixed
 - Added missing manufacturer codes for Honda and Volkswagen in `LocalVinDecoder`
 - Updated tests to work with `VehicleInfo` object instead of array format
 - Improved compatibility between API and local decoding results
+- Resolved issue with trying to modify class constants at runtime using Reflection
 
 ## [1.2.0] - 2025-04-14
 
