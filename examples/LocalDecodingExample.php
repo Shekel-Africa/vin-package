@@ -50,7 +50,7 @@ echo "Model Year: " . $vin->getModelYear() . "\n";
 echo "Manufacturer: " . $vin->getManufacturerInfo() . "\n";
 
 // Check if the VIN was locally decoded
-echo "Is locally decoded: " . ($vin->isLocallyDecoded() ? "Yes" : "No") . "\n";
+echo "Is locally decoded: " . ($vin->getVehicleInfo()->isLocallyDecoded() ? "Yes" : "No") . "\n";
 
 // Example 4: Disable local fallback
 echo "\nExample 4: Disabling local fallback\n";
