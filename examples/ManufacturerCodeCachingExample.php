@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Shekel\VinPackage\Examples\ArrayVinCache;
+use Shekel\VinPackage\Cache\ArrayVinCache;
 use Shekel\VinPackage\Services\VinDecoderService;
 
 echo "Manufacturer Code Caching Example\n";

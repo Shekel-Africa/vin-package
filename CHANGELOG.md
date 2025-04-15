@@ -19,17 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Auto-enhancement of local manufacturer database based on API responses
 - Runtime collection of manufacturer codes combining built-in and cached codes
 - Direct WMI extraction from VIN to pair with manufacturer data from NHTSA
+- Comprehensive tests for manufacturer code caching functionality
+- Example file demonstrating manufacturer code learning and caching capabilities
 
 ### Changed
 - Improved manufacturer code caching with separate runtime collection
 - Modified LocalVinDecoder to use cached manufacturer codes without Reflection API
 - Enhanced VinDecoderService to extract WMI directly from VIN instead of relying on NHTSA response
+- Updated addManufacturerCode method to properly handle WMIs of varying lengths
 
 ### Fixed
 - Added missing manufacturer codes for Honda and Volkswagen in `LocalVinDecoder`
 - Updated tests to work with `VehicleInfo` object instead of array format
 - Improved compatibility between API and local decoding results
 - Resolved issue with trying to modify class constants at runtime using Reflection
+- Fixed bug in LocalVinDecoder where WMIs longer than 3 characters were being rejected instead of trimmed
 
 ## [1.2.0] - 2025-04-14
 

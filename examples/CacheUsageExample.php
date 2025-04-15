@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Shekel\VinPackage\Vin;
-use Shekel\VinPackage\Examples\ArrayVinCache;
+use Shekel\VinPackage\Cache\ArrayVinCache;
 use Shekel\VinPackage\Services\VinDecoderService;
 
 // Example 1: Basic usage with array cache

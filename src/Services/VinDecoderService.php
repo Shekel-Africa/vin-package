@@ -73,7 +73,7 @@ class VinDecoderService
         $this->client = new Client(['timeout' => 15]);
         
         // Default to NHTSA API if no API URL provided
-        $this->apiBaseUrl = $apiUrl ?? 'https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/';
+        $this->apiBaseUrl = $apiUrl ?? 'https://vpic.nhtsa.dot.gov/api/vehicles/decodevinextended/';
         
         // Set cache and TTL
         $this->cache = $cache;

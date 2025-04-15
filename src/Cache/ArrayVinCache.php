@@ -1,6 +1,6 @@
 <?php
 
-namespace Shekel\VinPackage\Examples;
+namespace Shekel\VinPackage\Cache;
 
 use Shekel\VinPackage\Contracts\VinCacheInterface;
 

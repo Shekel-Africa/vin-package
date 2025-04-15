@@ -9,6 +9,14 @@ namespace Shekel\VinPackage\Decoders;
 class LocalVinDecoder
 {
     /**
+     * Manufacturer codes that are not in the NHTSA database
+     * 
+     * @var array
+     */
+    private array $extraManufacturerCodes = [];
+
+
+    /**
      * Country codes in the first position of VIN
      * 
      * @var array
@@ -157,6 +165,7 @@ class LocalVinDecoder
     {
         // Initialize runtime codes with the default codes
         $this->runtimeManufacturerCodes = self::MANUFACTURER_CODES;
+        $this->extraManufacturerCodes = json_decode(file_get_contents(__DIR__ . '/../../data/wmi_transformed.json'), true);
     }
 
     /**
@@ -260,6 +269,18 @@ class LocalVinDecoder
             if (isset($makeParts[1])) {
                 $vehicle['additional_info']['vehicle_type'] = $makeParts[1];
             }
+        } else {
+            $wmiManufacturer = $this->extraManufacturerCodes[$wmi] ?? null;
+            if ($wmiManufacturer) {
+                $vehicle['manufacturer'] = explode('::', $wmiManufacturer['manufacturer'])[0];
+                
+                // Extract make from manufacturer (before the dash if present)
+                if ($vehicle['country'] === null) {
+                    $vehicle['country'] = $wmiManufacturer['country'];
+                }
+            } else {
+                $vehicle['manufacturer'] = 'Unknown';
+            }
         }
         
         // Get the model year from the 10th character of the VIN
@@ -319,6 +340,16 @@ class LocalVinDecoder
      */
     public function addManufacturerCode(string $wmi, string $manufacturerName): void
     {
+        // Handle empty WMI
+        if (empty($wmi)) {
+            return;
+        }
+        
+        // If WMI is longer than 3 characters, trim it
+        if (strlen($wmi) > 3) {
+            $wmi = substr($wmi, 0, 3);
+        }
+        
         // Make sure WMI is exactly 3 characters
         if (strlen($wmi) !== 3) {
             return;
