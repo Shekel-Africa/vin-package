@@ -5,8 +5,10 @@ All notable changes to the Shekel VIN Package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.1] - 2025-04-15
+
 ### Added
+
 - New `VehicleInfo` value object class for better intellisense/autocompletion support
 - Type hints and return type declarations in all methods returning vehicle information
 - Strongly typed properties for all vehicle attributes (make, model, year, etc.)
@@ -23,12 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Example file demonstrating manufacturer code learning and caching capabilities
 
 ### Changed
+
 - Improved manufacturer code caching with separate runtime collection
 - Modified LocalVinDecoder to use cached manufacturer codes without Reflection API
 - Enhanced VinDecoderService to extract WMI directly from VIN instead of relying on NHTSA response
 - Updated addManufacturerCode method to properly handle WMIs of varying lengths
 
 ### Fixed
+
 - Added missing manufacturer codes for Honda and Volkswagen in `LocalVinDecoder`
 - Updated tests to work with `VehicleInfo` object instead of array format
 - Improved compatibility between API and local decoding results
@@ -38,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0] - 2025-04-14
 
 ### Added
+
 - New `VinGenerator` utility class for generating valid test VINs
 - Region-specific VIN generation (US, EU, JP, KR, CN)
 - `VinGeneratorExample.php` to demonstrate test VIN generation
@@ -45,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PHPUnit configuration file with test suites
 
 ### Fixed
+
 - Enhanced VIN validation to handle European and Asian manufacturer patterns
 - Added special case handling for Toyota VINs that use different check digit algorithms
 - Updated validation rules to be more accommodating of regional VIN formats
@@ -52,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2025-04-14
 
 ### Added
+
 - Local VIN decoding functionality as fallback when NHTSA API is unavailable
 - Ability to detect and prioritize API calls for previously locally-decoded VINs
 - New method `getLocalVehicleInfo()` to decode VINs directly using local database
@@ -67,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Composer scripts for running tests and code style checks
 
 ### Changed
+
 - `VinDecoderService` now supports local decoding fallback
 - All decode responses now include data source metadata
 - `getVehicleInfo()` method now has optional parameters for cache control and API prioritization
@@ -74,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-04-10
 
 ### Added
+
 - Initial release
 - VIN validation based on ISO 3779 standard
 - VIN decoding through NHTSA API
