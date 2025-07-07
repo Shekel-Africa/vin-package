@@ -29,12 +29,12 @@ class VinDecoderService
      * @var int|null Default cache TTL in seconds (30 days)
      */
     private ?int $cacheTtl;
-    
+
     /**
      * @var LocalVinDecoder
      */
     private LocalVinDecoder $localDecoder;
-    
+
     /**
      * @var bool
      */
@@ -42,7 +42,7 @@ class VinDecoderService
 
     /**
      * Year code mapping for model year
-     * 
+     *
      * @var array
      */
     private const YEAR_CODES = [
@@ -58,7 +58,7 @@ class VinDecoderService
 
     /**
      * Constructor
-     * 
+     *
      * @param string|null $apiUrl Base URL for the VIN API
      * @param VinCacheInterface|null $cache Cache implementation
      * @param int|null $cacheTtl Default cache TTL in seconds (30 days if null)
@@ -71,28 +71,28 @@ class VinDecoderService
         bool $useLocalFallback = true
     ) {
         $this->client = new Client(['timeout' => 15]);
-        
+
         // Default to NHTSA API if no API URL provided
         $this->apiBaseUrl = $apiUrl ?? 'https://vpic.nhtsa.dot.gov/api/vehicles/decodevinextended/';
-        
+
         // Set cache and TTL
         $this->cache = $cache;
         $this->cacheTtl = $cacheTtl ?? 2592000; // 30 days default
-        
+
         // Initialize local decoder
         $this->localDecoder = new LocalVinDecoder();
-        
+
         // Pass the cache to the local decoder if available
         if ($cache) {
             $this->localDecoder->setCache($cache);
         }
-        
+
         $this->useLocalFallback = $useLocalFallback;
     }
 
     /**
      * Decode a VIN to get vehicle information
-     * 
+     *
      * @param string $vin
      * @param bool $skipCache Whether to skip checking the cache
      * @param bool $forceRefresh Whether to force API refresh for locally decoded VINs
@@ -109,92 +109,90 @@ class VinDecoderService
         }
 
         $cacheKey = 'vin_data_' . md5($vin);
-        
+
         // Check cache first if available and not skipped
         if (!$skipCache && $this->cache && $this->cache->has($cacheKey)) {
             $cachedData = $this->cache->get($cacheKey);
-            
-            // If data was locally decoded and we're not forcing a refresh, return it
-            if (!$forceRefresh || empty($cachedData['additional_info']['decoded_by']) || 
-                $cachedData['additional_info']['decoded_by'] !== 'local_decoder') {
+            $cacheMetadata = $cachedData['cache_metadata'] ?? [];
+
+            // If data was NOT locally decoded and came from successful API call, return it
+            if (
+                !empty($cacheMetadata['decoded_by']) &&
+                $cacheMetadata['decoded_by'] === 'nhtsa_api' &&
+                ($cacheMetadata['api_call_success'] ?? false)
+            ) {
                 return VehicleInfo::fromArray($cachedData);
             }
-            
-            // Otherwise, try to get fresh data from API
-            // but keep the local data as fallback if API fails
+
+            // If data was locally decoded OR from failed API call, continue to decode locally first
         }
-        
+
+        // Always decode locally first to get base data
+        $localData = $this->localDecoder->decode($vin);
+
         try {
-            // Try to get data from the API
+            // Try to get enhanced data from the API
             $response = $this->client->get("{$this->apiBaseUrl}{$vin}?format=json");
             $data = json_decode($response->getBody(), true);
 
             if (!$data || !isset($data['Results'])) {
-                // API returned invalid response, try local decoder if enabled
-                if ($this->useLocalFallback) {
-                    return $this->decodeLocally($vin);
-                }
-                throw new \Exception("Failed to decode VIN: Invalid API response format");
+                // API returned invalid response, return local data with failure metadata
+                return $this->createVehicleInfoWithMetadata($localData, false, 'Invalid API response', $vin);
             }
 
-            $result = $this->formatVehicleData($data['Results'], $vin);
-            
-            // Mark as API-decoded
-            $result['additional_info']['decoded_by'] = 'nhtsa_api';
-            $result['additional_info']['decoding_date'] = date('Y-m-d H:i:s');
-            
+            // Format API data and merge with local data
+            $apiData = $this->formatVehicleData($data['Results'], $vin);
+            $mergedData = $this->mergeLocalAndApiData($localData, $apiData);
+
+            // Mark as API-enhanced with success metadata
+            $mergedData['cache_metadata'] = [
+                'decoded_by' => 'nhtsa_api',
+                'api_call_success' => true,
+                'decoding_date' => date('Y-m-d H:i:s'),
+                'last_api_attempt' => date('Y-m-d H:i:s'),
+                'enhanced_from_local' => true
+            ];
+
             // Store in cache if available
             if ($this->cache) {
-                $this->cache->set($cacheKey, $result, $this->cacheTtl);
+                $this->cache->set($cacheKey, $mergedData, $this->cacheTtl);
             }
 
-            return VehicleInfo::fromArray($result);
-        } 
-        catch (\GuzzleHttp\Exception\ConnectException $e) {
+            return VehicleInfo::fromArray($mergedData);
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
             // Connection-related errors (network issues, timeouts)
-            if ($this->useLocalFallback) {
-                return $this->decodeLocally($vin);
-            }
-            throw new \Exception("API Connection Error: " . $e->getMessage(), $e->getCode(), $e);
-        }
-        catch (\GuzzleHttp\Exception\RequestException $e) {
+            return $this->createVehicleInfoWithMetadata($localData, false, 'Connection error: ' . $e->getMessage(), $vin);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
             // HTTP errors (4xx, 5xx)
-            if ($this->useLocalFallback) {
-                return $this->decodeLocally($vin);
-            }
-            throw new \Exception("API Request Error: " . $e->getMessage(), $e->getCode(), $e);
-        }
-        catch (\Exception $e) {
+            return $this->createVehicleInfoWithMetadata($localData, false, 'Request error: ' . $e->getMessage(), $vin);
+        } catch (\Exception $e) {
             // Generic catch-all for any other errors
-            if ($this->useLocalFallback) {
-                return $this->decodeLocally($vin);
-            }
-            throw new \Exception("API Error: " . $e->getMessage(), $e->getCode(), $e);
+            return $this->createVehicleInfoWithMetadata($localData, false, 'API error: ' . $e->getMessage(), $vin);
         }
     }
-    
+
     /**
      * Decode a VIN locally without using the API
-     * 
+     *
      * @param string $vin
+     * @param bool $apiCallFailed Whether this local decode is due to API failure
      * @return VehicleInfo
      */
-    public function decodeLocally(string $vin): VehicleInfo
+    public function decodeLocally(string $vin, bool $apiCallFailed = false): VehicleInfo
     {
         $localData = $this->localDecoder->decode($vin);
-        
-        // Store in cache if available
-        if ($this->cache) {
-            $cacheKey = 'vin_data_' . md5($vin);
-            $this->cache->set($cacheKey, $localData, $this->cacheTtl);
-        }
-        
-        return VehicleInfo::fromArray($localData);
+
+        return $this->createVehicleInfoWithMetadata(
+            $localData,
+            false,
+            $apiCallFailed ? 'API call failed, used local fallback' : 'Direct local decode',
+            $vin
+        );
     }
 
     /**
      * Format the API response into a more user-friendly structure
-     * 
+     *
      * @param array $results
      * @param string $vin Original VIN for extracting WMI
      * @return array
@@ -241,11 +239,11 @@ class VinDecoderService
                 $vehicle['validation']['error_text'] = $item['Value'];
                 continue;
             }
-            
+
             if (!isset($item['Value']) || $item['Value'] === null || $item['Value'] === '') {
                 continue;
             }
-            
+
             switch ($item['Variable']) {
                 case 'Make':
                     $vehicle['make'] = $item['Value'];
@@ -291,8 +289,7 @@ class VinDecoderService
         // If we have manufacturer name and WMI, enhance local database
         if (!empty($vehicle['manufacturer'])) {
             $this->enhanceLocalManufacturerDatabase($wmi, $vehicle['manufacturer']);
-        } 
-        else if (!empty($vehicle['make'])) {
+        } elseif (!empty($vehicle['make'])) {
             $this->enhanceLocalManufacturerDatabase($wmi, $vehicle['make']);
         }
         // If we have make name and WMI, use that instead for enhancing the database
@@ -302,7 +299,7 @@ class VinDecoderService
 
     /**
      * Enhance the local manufacturer database with data from NHTSA
-     * 
+     *
      * @param string $wmi
      * @param string $manufacturerName
      * @return void
@@ -311,14 +308,14 @@ class VinDecoderService
     {
         // Only use the first 3 characters of the WMI
         $wmi = substr($wmi, 0, 3);
-        
+
         // Add to the local decoder's manufacturer database
         $this->localDecoder->addManufacturerCode($wmi, $manufacturerName);
     }
 
     /**
      * Decode the model year from VIN year code
-     * 
+     *
      * @param string $yearCode
      * @return string
      */
@@ -329,7 +326,7 @@ class VinDecoderService
 
     /**
      * Get the World Manufacturer Identification mapping
-     * 
+     *
      * @param string $wmi
      * @param bool $skipCache Whether to skip checking the cache
      * @return array|null
@@ -337,12 +334,12 @@ class VinDecoderService
     public function getManufacturerInfo(string $wmi, bool $skipCache = false): ?array
     {
         $cacheKey = 'vin_wmi_' . md5($wmi);
-        
+
         // Check cache first if available and not skipped
         if (!$skipCache && $this->cache && $this->cache->has($cacheKey)) {
             return $this->cache->get($cacheKey);
         }
-        
+
         try {
             $response = $this->client->get("https://vpic.nhtsa.dot.gov/api/vehicles/GetWMIsForManufacturer/{$wmi}?format=json");
             $data = json_decode($response->getBody(), true);
@@ -352,18 +349,18 @@ class VinDecoderService
             }
 
             $result = $data['Results'][0];
-            
+
             // Store in cache if available
             if ($this->cache) {
                 $this->cache->set($cacheKey, $result, $this->cacheTtl);
             }
-            
+
             return $result;
         } catch (GuzzleException $e) {
             return null;
         }
     }
-    
+
     /**
      * Clear cached data for a specific VIN
      *
@@ -375,11 +372,11 @@ class VinDecoderService
         if (!$this->cache) {
             return false;
         }
-        
+
         $cacheKey = 'vin_data_' . md5($vin);
         return $this->cache->delete($cacheKey);
     }
-    
+
     /**
      * Set a custom cache TTL
      *
@@ -391,7 +388,7 @@ class VinDecoderService
         $this->cacheTtl = $ttl;
         return $this;
     }
-    
+
     /**
      * Enable or disable local fallback decoding
      *
@@ -403,7 +400,7 @@ class VinDecoderService
         $this->useLocalFallback = $enabled;
         return $this;
     }
-    
+
     /**
      * Check if data was decoded locally
      *
@@ -413,5 +410,66 @@ class VinDecoderService
     public function isLocallyDecoded(VehicleInfo $vehicleInfo): bool
     {
         return $vehicleInfo->isLocallyDecoded();
+    }
+
+    /**
+     * Create VehicleInfo with cache metadata
+     *
+     * @param array $vehicleData
+     * @param bool $apiSuccess
+     * @param string $notes
+     * @param string $vin
+     * @return VehicleInfo
+     */
+    private function createVehicleInfoWithMetadata(array $vehicleData, bool $apiSuccess, string $notes = '', string $vin = ''): VehicleInfo
+    {
+        $vehicleData['cache_metadata'] = [
+            'decoded_by' => $apiSuccess ? 'nhtsa_api' : 'local_decoder',
+            'api_call_success' => $apiSuccess,
+            'decoding_date' => date('Y-m-d H:i:s'),
+            'last_api_attempt' => date('Y-m-d H:i:s'),
+            'notes' => $notes
+        ];
+
+        // Store in cache if available
+        if ($this->cache && !empty($vin)) {
+            $cacheKey = 'vin_data_' . md5($vin);
+            $this->cache->set($cacheKey, $vehicleData, $this->cacheTtl);
+        }
+
+        return VehicleInfo::fromArray($vehicleData);
+    }
+
+    /**
+     * Merge local and API data, preferring API data when available
+     *
+     * @param array $localData
+     * @param array $apiData
+     * @return array
+     */
+    private function mergeLocalAndApiData(array $localData, array $apiData): array
+    {
+        // Start with local data as base
+        $mergedData = $localData;
+
+        // Override with API data where API provides better information
+        $fieldsToMerge = ['make', 'model', 'year', 'trim', 'engine', 'plant', 'body_style',
+                         'fuel_type', 'transmission', 'manufacturer', 'country', 'validation'];
+
+        foreach ($fieldsToMerge as $field) {
+            if (!empty($apiData[$field])) {
+                $mergedData[$field] = $apiData[$field];
+            }
+        }
+
+        // Merge additional_info, preserving both local and API data
+        if (!empty($apiData['additional_info'])) {
+            $mergedData['additional_info'] = array_merge(
+                $mergedData['additional_info'] ?? [],
+                $apiData['additional_info']
+            );
+        }
+
+        return $mergedData;
     }
 }

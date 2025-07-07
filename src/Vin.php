@@ -34,15 +34,15 @@ class Vin
      * @param bool $useLocalFallback Whether to use local decoder as fallback when API fails
      */
     public function __construct(
-        string $vin, 
-        ?VinDecoderService $decoderService = null, 
-        ?VinCacheInterface $cache = null, 
+        string $vin,
+        ?VinDecoderService $decoderService = null,
+        ?VinCacheInterface $cache = null,
         ?int $cacheTtl = null,
         bool $useLocalFallback = true
     ) {
         $this->vin = strtoupper(trim($vin));
         $this->validator = new VinValidator();
-        
+
         if ($decoderService) {
             $this->decoderService = $decoderService;
         } else {
@@ -96,7 +96,7 @@ class Vin
 
         return $this->decoderService->decode($this->vin, $skipCache, $forceApiRefresh);
     }
-    
+
     /**
      * Get VIN information using only local decoding (no API call)
      *
@@ -151,10 +151,10 @@ class Vin
     {
         // The 10th character of the VIN represents the model year
         $yearCode = substr($this->vin, 9, 1);
-        
+
         return $this->decoderService->decodeModelYear($yearCode);
     }
-    
+
     /**
      * Get manufacturer information based on the WMI
      *
@@ -165,7 +165,7 @@ class Vin
     {
         return $this->decoderService->getManufacturerInfo($this->getWMI(), $skipCache);
     }
-    
+
     /**
      * Clear cached data for this VIN
      *
@@ -175,7 +175,7 @@ class Vin
     {
         return $this->decoderService->clearCacheForVin($this->vin);
     }
-    
+
     /**
      * Get the decoder service
      *
@@ -185,7 +185,7 @@ class Vin
     {
         return $this->decoderService;
     }
-    
+
     /**
      * Check if the data for this VIN was decoded locally rather than from the API
      *
@@ -196,7 +196,7 @@ class Vin
     {
         return $this->decoderService->isLocallyDecoded($data);
     }
-    
+
     /**
      * Enable or disable local fallback decoding
      *

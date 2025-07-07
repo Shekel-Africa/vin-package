@@ -10,7 +10,7 @@ class LocalVinDecoder
 {
     /**
      * Manufacturer codes that are not in the NHTSA database
-     * 
+     *
      * @var array
      */
     private array $extraManufacturerCodes = [];
@@ -18,7 +18,7 @@ class LocalVinDecoder
 
     /**
      * Country codes in the first position of VIN
-     * 
+     *
      * @var array
      */
     private const COUNTRY_CODES = [
@@ -55,10 +55,10 @@ class LocalVinDecoder
         '8' => 'Argentina',
         '9' => 'Brazil'
     ];
-    
+
     /**
      * Common manufacturer WMI codes
-     * 
+     *
      * @var array
      */
     private const MANUFACTURER_CODES = [
@@ -129,10 +129,10 @@ class LocalVinDecoder
         'MRH' => 'MG',
         'PL1' => 'Proton'
     ];
-    
+
     /**
      * Year code mapping for model year
-     * 
+     *
      * @var array
      */
     private const YEAR_CODES = [
@@ -150,14 +150,14 @@ class LocalVinDecoder
      * @var \Shekel\VinPackage\Contracts\VinCacheInterface|null
      */
     private ?\Shekel\VinPackage\Contracts\VinCacheInterface $cache = null;
-    
+
     /**
      * Runtime manufacturer codes that combine default codes with cached codes
-     * 
+     *
      * @var array
      */
     private array $runtimeManufacturerCodes = [];
-    
+
     /**
      * Constructor initializes runtime manufacturer codes
      */
@@ -170,25 +170,25 @@ class LocalVinDecoder
 
     /**
      * Set the cache implementation for storing manufacturer codes
-     * 
+     *
      * @param \Shekel\VinPackage\Contracts\VinCacheInterface|null $cache
      * @return self
      */
     public function setCache(?\Shekel\VinPackage\Contracts\VinCacheInterface $cache): self
     {
         $this->cache = $cache;
-        
+
         // If cache is provided, load any stored manufacturer codes
         if ($cache && $cache->has('manufacturer_codes')) {
             $this->loadManufacturerCodesFromCache();
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Load manufacturer codes from cache
-     * 
+     *
      * @return void
      */
     private function loadManufacturerCodesFromCache(): void
@@ -196,19 +196,19 @@ class LocalVinDecoder
         if (!$this->cache) {
             return;
         }
-        
+
         $cachedCodes = $this->cache->get('manufacturer_codes');
         if (!is_array($cachedCodes)) {
             return;
         }
-        
+
         // Merge cached codes with built-in codes (built-in codes take precedence)
         // This ensures we always have the most accurate and up-to-date information
         $this->runtimeManufacturerCodes = array_merge($cachedCodes, self::MANUFACTURER_CODES);
     }
     /**
      * Extract the World Manufacturer Identifier (WMI) from the VIN
-     * 
+     *
      * @param string $vin
      * @return string
      */
@@ -220,7 +220,7 @@ class LocalVinDecoder
 
     /**
      * Decode a VIN locally without using external APIs
-     * 
+     *
      * @param string $vin
      * @return array
      */
@@ -250,21 +250,21 @@ class LocalVinDecoder
                 'partial_info' => true
             ]
         ];
-        
+
         // Get country of origin from the first character
         $firstChar = $vin[0];
         $vehicle['country'] = self::COUNTRY_CODES[$firstChar] ?? 'Unknown';
-        
+
         // Get manufacturer by WMI (first 3 characters)
         $manufacturer = $this->getManufacturerFromWMI($wmi);
-        
+
         if ($manufacturer) {
             $vehicle['manufacturer'] = $manufacturer;
-            
+
             // Extract make from manufacturer (before the dash if present)
             $makeParts = explode(' - ', $manufacturer);
             $vehicle['make'] = $makeParts[0];
-            
+
             // Add any model info (after the dash)
             if (isset($makeParts[1])) {
                 $vehicle['additional_info']['vehicle_type'] = $makeParts[1];
@@ -273,7 +273,7 @@ class LocalVinDecoder
             $wmiManufacturer = $this->extraManufacturerCodes[$wmi] ?? null;
             if ($wmiManufacturer) {
                 $vehicle['manufacturer'] = explode('::', $wmiManufacturer['manufacturer'])[0];
-                
+
                 // Extract make from manufacturer (before the dash if present)
                 if ($vehicle['country'] === null) {
                     $vehicle['country'] = $wmiManufacturer['country'];
@@ -282,20 +282,20 @@ class LocalVinDecoder
                 $vehicle['manufacturer'] = 'Unknown';
             }
         }
-        
+
         // Get the model year from the 10th character of the VIN
         $yearCode = $vin[9];
         $vehicle['year'] = isset(self::YEAR_CODES[$yearCode]) ? self::YEAR_CODES[$yearCode] : 'Unknown';
-        
+
         // Determine the assembly plant from the 11th character
         $vehicle['plant'] = 'Plant Code: ' . $vin[10];
-        
+
         // Extract sequential production number
         $vehicle['additional_info']['serial_number'] = substr($vin, 11);
-        
+
         return $vehicle;
     }
-    
+
     /**
      * Get country from first character of VIN
      *
@@ -306,7 +306,7 @@ class LocalVinDecoder
     {
         return self::COUNTRY_CODES[$firstChar] ?? null;
     }
-    
+
     /**
      * Get manufacturer from WMI (first 3 characters of VIN)
      * Uses runtime manufacturer codes which include cached codes
@@ -318,7 +318,7 @@ class LocalVinDecoder
     {
         return $this->runtimeManufacturerCodes[$wmi] ?? null;
     }
-    
+
     /**
      * Get model year from year code (10th character of VIN)
      *
@@ -344,30 +344,30 @@ class LocalVinDecoder
         if (empty($wmi)) {
             return;
         }
-        
+
         // If WMI is longer than 3 characters, trim it
         if (strlen($wmi) > 3) {
             $wmi = substr($wmi, 0, 3);
         }
-        
+
         // Make sure WMI is exactly 3 characters
         if (strlen($wmi) !== 3) {
             return;
         }
-        
+
         // Only add if this WMI doesn't exist in our built-in database
         if (!isset(self::MANUFACTURER_CODES[$wmi])) {
             // Add to runtime codes
             $this->runtimeManufacturerCodes[$wmi] = $manufacturerName;
-            
+
             // Cache the updated manufacturer codes
             $this->cacheManufacturerCodes();
         }
     }
-    
+
     /**
      * Cache the current manufacturer codes
-     * 
+     *
      * @return void
      */
     private function cacheManufacturerCodes(): void
@@ -375,12 +375,12 @@ class LocalVinDecoder
         if (!$this->cache) {
             return;
         }
-        
+
         // Cache only the runtime codes that aren't in the built-in database
         $cacheCodes = array_diff_key($this->runtimeManufacturerCodes, self::MANUFACTURER_CODES);
         $this->cache->set('manufacturer_codes', $cacheCodes);
     }
-    
+
     /**
      * Get all manufacturer codes currently registered (built-in + cached)
      *
