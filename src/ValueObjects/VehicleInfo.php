@@ -54,6 +54,11 @@ class VehicleInfo
     private ?string $transmission;
 
     /**
+     * @var string|null Transmission style
+     */
+    private ?string $transmissionStyle;
+
+    /**
      * @var string|null Manufacturer name
      */
     private ?string $manufacturer;
@@ -92,6 +97,7 @@ class VehicleInfo
         $instance->bodyStyle = $data['body_style'] ?? null;
         $instance->fuelType = $data['fuel_type'] ?? null;
         $instance->transmission = $data['transmission'] ?? null;
+        $instance->transmissionStyle = $data['transmission_style'] ?? null;
         $instance->manufacturer = $data['manufacturer'] ?? null;
         $instance->country = $data['country'] ?? null;
         $instance->additionalInfo = $data['additional_info'] ?? [];
@@ -126,6 +132,7 @@ class VehicleInfo
             'body_style' => $this->bodyStyle,
             'fuel_type' => $this->fuelType,
             'transmission' => $this->transmission,
+            'transmission_style' => $this->transmissionStyle,
             'manufacturer' => $this->manufacturer,
             'country' => $this->country,
             'additional_info' => $this->additionalInfo,
@@ -228,6 +235,16 @@ class VehicleInfo
     public function getTransmission(): ?string
     {
         return $this->transmission;
+    }
+
+    /**
+     * Get transmission style
+     *
+     * @return string|null
+     */
+    public function getTransmissionStyle(): ?string
+    {
+        return $this->transmissionStyle;
     }
 
     /**

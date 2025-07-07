@@ -165,7 +165,10 @@ class LocalVinDecoder
     {
         // Initialize runtime codes with the default codes
         $this->runtimeManufacturerCodes = self::MANUFACTURER_CODES;
-        $this->extraManufacturerCodes = json_decode(file_get_contents(__DIR__ . '/../../data/wmi_transformed.json'), true);
+        $this->extraManufacturerCodes = json_decode(
+            file_get_contents(__DIR__ . '/../../data/wmi_transformed.json'),
+            true
+        );
     }
 
     /**
@@ -226,7 +229,12 @@ class LocalVinDecoder
      */
     public function decode(string $vin): array
     {
-        $wmi = $this->extractWMI($vin);
+        // Handle invalid/short VINs gracefully
+        if (strlen($vin) < 17) {
+            $vin = str_pad($vin, 17, '0'); // Pad with zeros to make it 17 characters
+        }
+
+        $wmi = substr($vin, 0, 3);
         // Initialize vehicle data with the structure expected by VehicleInfo
         $vehicle = [
             'make' => null,
@@ -243,16 +251,16 @@ class LocalVinDecoder
             'additional_info' => [
                 'decoded_by' => 'local_decoder',
                 'decoding_date' => date('Y-m-d H:i:s'),
-                'wmi' => $wmi,
-                'vds' => substr($vin, 3, 6),
-                'vis' => substr($vin, 9, 8),
-                'check_digit' => $vin[8],
+                'WMI' => $wmi,
+                'VDS' => substr($vin, 3, 6),
+                'VIS' => substr($vin, 9, 8),
+                'check_digit' => $vin[8] ?? '0',
                 'partial_info' => true
             ]
         ];
 
         // Get country of origin from the first character
-        $firstChar = $vin[0];
+        $firstChar = $vin[0] ?? '0';
         $vehicle['country'] = self::COUNTRY_CODES[$firstChar] ?? 'Unknown';
 
         // Get manufacturer by WMI (first 3 characters)
@@ -292,6 +300,11 @@ class LocalVinDecoder
 
         // Extract sequential production number
         $vehicle['additional_info']['serial_number'] = substr($vin, 11);
+
+        // Infer transmission based on available data
+        $transmissionData = $this->inferTransmission($vehicle, $vin);
+        $vehicle['transmission'] = $transmissionData['type'] ?? null;
+        $vehicle['transmission_style'] = $transmissionData['style'] ?? null;
 
         return $vehicle;
     }
@@ -389,5 +402,229 @@ class LocalVinDecoder
     public function getManufacturerCodes(): array
     {
         return $this->runtimeManufacturerCodes;
+    }
+
+    /**
+     * Infer transmission type and style based on vehicle data
+     *
+     * @param array $vehicle
+     * @param string $vin
+     * @return array
+     */
+    private function inferTransmission(array $vehicle, string $vin): array
+    {
+        $make = $vehicle['make'] ?? $vehicle['manufacturer'] ?? '';
+        $model = $vehicle['model'] ?? '';
+        $year = $vehicle['year'] ?? '';
+        $trim = '';
+
+        // Try to extract trim from manufacturer name if it contains model info
+        if (isset($vehicle['manufacturer']) && strpos($vehicle['manufacturer'], ' - ') !== false) {
+            $parts = explode(' - ', $vehicle['manufacturer']);
+            if (isset($parts[1])) {
+                $trim = $parts[1];
+            }
+        }
+
+        // Also check if trim is available directly from the data
+        if (empty($trim) && !empty($vehicle['trim'])) {
+            $trim = $vehicle['trim'];
+        }
+
+        // Skip inference if we don't have basic data
+        if (empty($make) || empty($year) || $year === 'Unknown') {
+            return ['type' => null, 'style' => null];
+        }
+
+        // Convert year to integer for comparison
+        $yearInt = is_numeric($year) ? (int)$year : 0;
+        if ($yearInt < 1980 || $yearInt > 2030) {
+            return ['type' => null, 'style' => null]; // Invalid year range
+        }
+
+        // Toyota-specific inference
+        if (stripos($make, 'Toyota') !== false) {
+            return $this->inferToyotaTransmission($model, $yearInt, $trim, $vin);
+        }
+
+        // Honda-specific inference
+        if (stripos($make, 'Honda') !== false) {
+            return $this->inferHondaTransmission($model, $yearInt, $trim, $vin);
+        }
+
+        // Ford-specific inference
+        if (stripos($make, 'Ford') !== false) {
+            return $this->inferFordTransmission($model, $yearInt, $trim, $vin);
+        }
+
+        // General inference for other makes
+        return $this->inferGeneralTransmission($make, $model, $yearInt, $trim, $vin);
+    }
+
+    /**
+     * Infer transmission for Toyota vehicles
+     */
+    private function inferToyotaTransmission(string $model, int $year, string $trim, string $vin): array
+    {
+        // Camry transmission logic
+        if (stripos($model, 'Camry') !== false) {
+            if ($year >= 2012 && $year <= 2017) {
+                // Check engine type via VDS (characters 4-8)
+                $vds = substr($vin, 3, 6);
+
+                // Look for V6 indicators in trim or VDS
+                if (
+                    stripos($trim, 'V6') !== false ||
+                    stripos($vds, 'K1F') !== false
+                ) { // Common V6 VDS pattern
+                    return ['type' => 'Automatic', 'style' => '6-Speed'];
+                }
+
+                // 4-cylinder models typically have CVT (2012+)
+                return ['type' => 'Automatic', 'style' => 'CVT'];
+            }
+
+            if ($year >= 2018) {
+                // 2018+ Camry uses 8-speed automatic for most trims
+                return ['type' => 'Automatic', 'style' => '8-Speed'];
+            }
+        }
+
+        // Corolla transmission logic
+        if (stripos($model, 'Corolla') !== false) {
+            if ($year >= 2014) {
+                return ['type' => 'Automatic', 'style' => 'CVT'];
+            }
+            if ($year >= 2009) {
+                return ['type' => 'Automatic', 'style' => '4-Speed'];
+            }
+        }
+
+        // Prius (always hybrid with eCVT)
+        if (stripos($model, 'Prius') !== false) {
+            return ['type' => 'Automatic', 'style' => 'eCVT'];
+        }
+
+        // RAV4
+        if (stripos($model, 'RAV4') !== false || stripos($model, 'Rav4') !== false) {
+            if ($year >= 2013) {
+                return ['type' => 'Automatic', 'style' => '6-Speed'];
+            }
+        }
+
+        // Highlander
+        if (stripos($model, 'Highlander') !== false) {
+            if ($year >= 2014) {
+                return ['type' => 'Automatic', 'style' => '8-Speed'];
+            }
+            return ['type' => 'Automatic', 'style' => '6-Speed'];
+        }
+
+        // Default for Toyota vehicles
+        if ($year >= 2015) {
+            return ['type' => 'Automatic', 'style' => 'CVT/6-Speed'];
+        }
+
+        return ['type' => 'Automatic', 'style' => '4-Speed'];
+    }
+
+    /**
+     * Infer transmission for Honda vehicles
+     */
+    private function inferHondaTransmission(string $model, int $year, string $trim, string $vin): array
+    {
+        // Civic
+        if (stripos($model, 'Civic') !== false) {
+            if ($year >= 2016) {
+                return ['type' => 'Automatic', 'style' => 'CVT'];
+            }
+            return ['type' => 'Automatic', 'style' => '5-Speed'];
+        }
+
+        // Accord
+        if (stripos($model, 'Accord') !== false) {
+            if ($year >= 2018) {
+                return ['type' => 'Automatic', 'style' => '10-Speed'];
+            }
+            if ($year >= 2013) {
+                return ['type' => 'Automatic', 'style' => 'CVT'];
+            }
+            return ['type' => 'Automatic', 'style' => '5-Speed'];
+        }
+
+        // CR-V
+        if (stripos($model, 'CR-V') !== false) {
+            if ($year >= 2015) {
+                return ['type' => 'Automatic', 'style' => 'CVT'];
+            }
+            return ['type' => 'Automatic', 'style' => '5-Speed'];
+        }
+
+        // Default for Honda
+        if ($year >= 2014) {
+            return ['type' => 'Automatic', 'style' => 'CVT'];
+        }
+
+        return ['type' => 'Automatic', 'style' => '5-Speed'];
+    }
+
+    /**
+     * Infer transmission for Ford vehicles
+     */
+    private function inferFordTransmission(string $model, int $year, string $trim, string $vin): array
+    {
+        // F-150
+        if (stripos($model, 'F-150') !== false || stripos($model, 'F150') !== false) {
+            if ($year >= 2017) {
+                return ['type' => 'Automatic', 'style' => '10-Speed'];
+            }
+            return ['type' => 'Automatic', 'style' => '6-Speed'];
+        }
+
+        // Focus
+        if (stripos($model, 'Focus') !== false) {
+            if ($year >= 2012 && $year <= 2018) {
+                return ['type' => 'Automatic', 'style' => 'PowerShift 6-Speed'];
+            }
+        }
+
+        // Fusion
+        if (stripos($model, 'Fusion') !== false) {
+            if ($year >= 2013) {
+                return ['type' => 'Automatic', 'style' => '6-Speed'];
+            }
+        }
+
+        // Default for Ford
+        return ['type' => 'Automatic', 'style' => '6-Speed'];
+    }
+
+    /**
+     * General transmission inference for other manufacturers
+     */
+    private function inferGeneralTransmission(string $make, string $model, int $year, string $trim, string $vin): array
+    {
+        // Modern vehicles (2015+) typically have advanced transmissions
+        if ($year >= 2015) {
+            // Luxury brands often use 8+ speed automatics
+            if (
+                stripos($make, 'BMW') !== false ||
+                stripos($make, 'Mercedes') !== false ||
+                stripos($make, 'Audi') !== false ||
+                stripos($make, 'Lexus') !== false
+            ) {
+                return ['type' => 'Automatic', 'style' => '8-Speed'];
+            }
+
+            // Most modern cars use CVT or 6+ speed automatic
+            return ['type' => 'Automatic', 'style' => 'CVT/6+ Speed'];
+        }
+
+        // Older vehicles
+        if ($year >= 2005) {
+            return ['type' => 'Automatic', 'style' => '5-Speed'];
+        }
+
+        return ['type' => 'Automatic', 'style' => '4-Speed'];
     }
 }

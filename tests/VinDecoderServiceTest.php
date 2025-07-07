@@ -231,7 +231,11 @@ class VinDecoderServiceTest extends TestCase
         $localResult = $decoderService->decodeLocally($vin);
 
         // The local decoder should use our cached manufacturer codes
-        $this->assertStringContainsString('TOYOTA', $localResult->getManufacturer(), 'Local decoding did not use cached manufacturer code');
+        $this->assertStringContainsString(
+            'TOYOTA',
+            $localResult->getManufacturer(),
+            'Local decoding did not use cached manufacturer code'
+        );
     }
 
     /**

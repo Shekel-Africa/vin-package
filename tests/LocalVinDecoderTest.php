@@ -160,7 +160,11 @@ class LocalVinDecoderTest extends TestCase
         // Test decoding with the new manufacturer code
         $testVin = 'ABC' . 'DE12345678901234'; // Create a VIN starting with our test WMI
         $decodedData = $decoder->decode($testVin);
-        $this->assertEquals($manufacturerName, $decodedData['manufacturer'], 'Decoded manufacturer does not match added code');
+        $this->assertEquals(
+            $manufacturerName,
+            $decodedData['manufacturer'],
+            'Decoded manufacturer does not match added code'
+        );
 
         // Test loading manufacturer codes from cache on a new decoder instance
         $newDecoder = new LocalVinDecoder();
@@ -169,11 +173,19 @@ class LocalVinDecoderTest extends TestCase
         // The new decoder should now have our cached manufacturer code
         $newAllCodes = $newDecoder->getManufacturerCodes();
         $this->assertArrayHasKey($wmi, $newAllCodes, 'Cached manufacturer code not loaded in new instance');
-        $this->assertEquals($manufacturerName, $newAllCodes[$wmi], 'Loaded manufacturer name does not match');
+        $this->assertEquals(
+            $manufacturerName,
+            $newAllCodes[$wmi],
+            'Loaded manufacturer name does not match'
+        );
 
         // Test that the new decoder can use the cached manufacturer code for decoding
         $newDecodedData = $newDecoder->decode($testVin);
-        $this->assertEquals($manufacturerName, $newDecodedData['manufacturer'], 'New decoder failed to use cached manufacturer code');
+        $this->assertEquals(
+            $manufacturerName,
+            $newDecodedData['manufacturer'],
+            'New decoder failed to use cached manufacturer code'
+        );
     }
 
     /**
@@ -213,7 +225,10 @@ class LocalVinDecoderTest extends TestCase
 
         // Test with WMI that's too short
         $decoder->addManufacturerCode('AB', 'Invalid Short WMI');
-        $this->assertFalse($mockCache->has('manufacturer_codes'), 'Invalid short WMI was incorrectly cached');
+        $this->assertFalse(
+            $mockCache->has('manufacturer_codes'),
+            'Invalid short WMI was incorrectly cached'
+        );
 
         // Test with WMI that's too long - should only use first 3 characters
         $decoder->addManufacturerCode('ABCD', 'Long WMI Manufacturer');
@@ -221,7 +236,11 @@ class LocalVinDecoderTest extends TestCase
 
         $cachedCodes = $mockCache->get('manufacturer_codes');
         $this->assertArrayHasKey('ABC', $cachedCodes, 'First 3 chars of long WMI not used');
-        $this->assertEquals('Long WMI Manufacturer', $cachedCodes['ABC'], 'Manufacturer name for trimmed WMI incorrect');
+        $this->assertEquals(
+            'Long WMI Manufacturer',
+            $cachedCodes['ABC'],
+            'Manufacturer name for trimmed WMI incorrect'
+        );
 
         // Test with empty WMI
         $decoder->addManufacturerCode('', 'Empty WMI');
@@ -279,14 +298,26 @@ class LocalVinDecoderTest extends TestCase
         $decodedData = $decoder->decode($hondaVin);
 
         // The manufacturer should be the built-in "Honda", not "Cached Honda Value"
-        $this->assertStringContainsString('Honda', $decodedData['manufacturer'], 'Built-in manufacturer not prioritized over cached one');
-        $this->assertStringNotContainsString('Cached Honda Value', $decodedData['manufacturer'], 'Cached manufacturer incorrectly used over built-in');
+        $this->assertStringContainsString(
+            'Honda',
+            $decodedData['manufacturer'],
+            'Built-in manufacturer not prioritized over cached one'
+        );
+        $this->assertStringNotContainsString(
+            'Cached Honda Value',
+            $decodedData['manufacturer'],
+            'Cached manufacturer incorrectly used over built-in'
+        );
 
         // Test decoding with the new WMI that only exists in cache
         $newVin = 'NEW' . 'DE12345678901234';
         $decodedData = $decoder->decode($newVin);
 
         // Should use the cached manufacturer
-        $this->assertEquals('New Manufacturer', $decodedData['manufacturer'], 'Cached manufacturer not used for new WMI');
+        $this->assertEquals(
+            'New Manufacturer',
+            $decodedData['manufacturer'],
+            'Cached manufacturer not used for new WMI'
+        );
     }
 }

@@ -1,0 +1,25 @@
+{
+  "Count": 3,
+  "Message": "Results returned successfully",
+  "SearchCriteria": "VIN:INVALID_VIN_12345",
+  "Results": [
+    {
+      "Value": "INVALID_VIN_12345",
+      "ValueId": "",
+      "Variable": "Suggested VIN",
+      "VariableId": 142
+    },
+    {
+      "Value": "5",
+      "ValueId": "5",
+      "Variable": "Error Code",
+      "VariableId": 143
+    },
+    {
+      "Value": "The VIN provided is invalid - VIN must be exactly 17 characters",
+      "ValueId": "",
+      "Variable": "Error Text",
+      "VariableId": 144
+    }
+  ]
+}

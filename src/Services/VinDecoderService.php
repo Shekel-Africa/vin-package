@@ -7,6 +7,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use Shekel\VinPackage\Contracts\VinCacheInterface;
 use Shekel\VinPackage\Decoders\LocalVinDecoder;
 use Shekel\VinPackage\ValueObjects\VehicleInfo;
+use Shekel\VinPackage\Services\VinDataSourceChain;
+use Shekel\VinPackage\Services\VinDataMerger;
 
 class VinDecoderService
 {
@@ -41,6 +43,26 @@ class VinDecoderService
     private bool $useLocalFallback = true;
 
     /**
+     * @var VinDataSourceChain|null
+     */
+    private ?VinDataSourceChain $dataSourceChain = null;
+
+    /**
+     * @var VinDataMerger|null
+     */
+    private ?VinDataMerger $dataMerger = null;
+
+    /**
+     * @var string
+     */
+    private string $executionStrategy = 'fail_fast';
+
+    /**
+     * @var bool
+     */
+    private bool $isExtensible = false;
+
+    /**
      * Year code mapping for model year
      *
      * @var array
@@ -57,19 +79,70 @@ class VinDecoderService
     ];
 
     /**
-     * Constructor
+     * Constructor - supports both legacy and extensible architectures
      *
+     * Legacy constructor:
      * @param string|null $apiUrl Base URL for the VIN API
      * @param VinCacheInterface|null $cache Cache implementation
      * @param int|null $cacheTtl Default cache TTL in seconds (30 days if null)
      * @param bool $useLocalFallback Whether to use local decoder as fallback
+     *
+     * Extensible constructor:
+     * @param VinDataSourceChain $dataSourceChain Chain of data sources
+     * @param VinDataMerger $dataMerger Data merger
+     * @param VinCacheInterface|null $cache Cache implementation
+     * @param string $executionStrategy Execution strategy (fail_fast or collect_all)
+     * @param int|null $cacheTtl Default cache TTL in seconds
      */
     public function __construct(
-        ?string $apiUrl = null,
-        ?VinCacheInterface $cache = null,
-        ?int $cacheTtl = null,
-        bool $useLocalFallback = true
+        $apiUrlOrChain = null,
+        $cacheOrMerger = null,
+        $cacheTtlOrCache = null,
+        $useLocalFallbackOrStrategy = true,
+        ?int $cacheTtl = null
     ) {
+        // Detect if this is the new extensible architecture
+        if ($apiUrlOrChain instanceof VinDataSourceChain) {
+            $this->initializeExtensible(
+                $apiUrlOrChain,
+                $cacheOrMerger,
+                $cacheTtlOrCache,
+                $useLocalFallbackOrStrategy,
+                $cacheTtl
+            );
+        } else {
+            $this->initializeLegacy($apiUrlOrChain, $cacheOrMerger, $cacheTtlOrCache, $useLocalFallbackOrStrategy);
+        }
+    }
+
+    private function initializeExtensible(
+        VinDataSourceChain $dataSourceChain,
+        VinDataMerger $dataMerger,
+        ?VinCacheInterface $cache,
+        string $executionStrategy = 'fail_fast',
+        ?int $cacheTtl = null
+    ): void {
+        $this->isExtensible = true;
+        $this->dataSourceChain = $dataSourceChain;
+        $this->dataMerger = $dataMerger;
+        $this->cache = $cache;
+        $this->executionStrategy = $executionStrategy;
+        $this->cacheTtl = $cacheTtl ?? 2592000; // 30 days default
+
+        // Initialize local decoder for backward compatibility
+        $this->localDecoder = new LocalVinDecoder();
+        if ($cache) {
+            $this->localDecoder->setCache($cache);
+        }
+    }
+
+    private function initializeLegacy(
+        ?string $apiUrl,
+        ?VinCacheInterface $cache,
+        ?int $cacheTtl,
+        bool $useLocalFallback
+    ): void {
+        $this->isExtensible = false;
         $this->client = new Client(['timeout' => 15]);
 
         // Default to NHTSA API if no API URL provided
@@ -108,6 +181,43 @@ class VinDecoderService
             throw new \InvalidArgumentException("Invalid VIN format: VIN must be exactly 17 characters");
         }
 
+        if ($this->isExtensible) {
+            return $this->decodeExtensible($vin, $skipCache);
+        } else {
+            return $this->decodeLegacy($vin, $skipCache, $forceRefresh);
+        }
+    }
+
+    private function decodeExtensible(string $vin, bool $skipCache): VehicleInfo
+    {
+        $cacheKey = 'vin_data_' . md5($vin);
+
+        // Check cache first if available and not skipped
+        if (!$skipCache && $this->cache && $this->cache->has($cacheKey)) {
+            $cachedData = $this->cache->get($cacheKey);
+            return VehicleInfo::fromArray($cachedData);
+        }
+
+        // Execute the data source chain
+        $chainResult = $this->dataSourceChain->executeChain($vin, $this->executionStrategy);
+
+        if (!$chainResult->hasSuccessfulResults()) {
+            throw new \Exception("No data sources were able to decode VIN: {$vin}");
+        }
+
+        // Merge data from successful sources
+        $mergedData = $this->dataMerger->merge($chainResult->getSuccessfulResults());
+
+        // Store in cache if available
+        if ($this->cache) {
+            $this->cache->set($cacheKey, $mergedData, $this->cacheTtl);
+        }
+
+        return VehicleInfo::fromArray($mergedData);
+    }
+
+    private function decodeLegacy(string $vin, bool $skipCache, bool $forceRefresh): VehicleInfo
+    {
         $cacheKey = 'vin_data_' . md5($vin);
 
         // Check cache first if available and not skipped
@@ -155,13 +265,22 @@ class VinDecoderService
 
             // Store in cache if available
             if ($this->cache) {
-                $this->cache->set($cacheKey, $mergedData, $this->cacheTtl);
+                $this->cache->set(
+                    $cacheKey,
+                    $mergedData,
+                    $this->cacheTtl
+                );
             }
 
             return VehicleInfo::fromArray($mergedData);
         } catch (\GuzzleHttp\Exception\ConnectException $e) {
             // Connection-related errors (network issues, timeouts)
-            return $this->createVehicleInfoWithMetadata($localData, false, 'Connection error: ' . $e->getMessage(), $vin);
+            return $this->createVehicleInfoWithMetadata(
+                $localData,
+                false,
+                'Connection error: ' . $e->getMessage(),
+                $vin
+            );
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             // HTTP errors (4xx, 5xx)
             return $this->createVehicleInfoWithMetadata($localData, false, 'Request error: ' . $e->getMessage(), $vin);
@@ -331,8 +450,10 @@ class VinDecoderService
      * @param bool $skipCache Whether to skip checking the cache
      * @return array|null
      */
-    public function getManufacturerInfo(string $wmi, bool $skipCache = false): ?array
-    {
+    public function getManufacturerInfo(
+        string $wmi,
+        bool $skipCache = false
+    ): ?array {
         $cacheKey = 'vin_wmi_' . md5($wmi);
 
         // Check cache first if available and not skipped
@@ -341,7 +462,9 @@ class VinDecoderService
         }
 
         try {
-            $response = $this->client->get("https://vpic.nhtsa.dot.gov/api/vehicles/GetWMIsForManufacturer/{$wmi}?format=json");
+            $response = $this->client->get(
+                "https://vpic.nhtsa.dot.gov/api/vehicles/GetWMIsForManufacturer/{$wmi}?format=json"
+            );
             $data = json_decode($response->getBody(), true);
 
             if (!$data || !isset($data['Results']) || empty($data['Results'])) {
@@ -421,8 +544,12 @@ class VinDecoderService
      * @param string $vin
      * @return VehicleInfo
      */
-    private function createVehicleInfoWithMetadata(array $vehicleData, bool $apiSuccess, string $notes = '', string $vin = ''): VehicleInfo
-    {
+    private function createVehicleInfoWithMetadata(
+        array $vehicleData,
+        bool $apiSuccess,
+        string $notes = '',
+        string $vin = ''
+    ): VehicleInfo {
         $vehicleData['cache_metadata'] = [
             'decoded_by' => $apiSuccess ? 'nhtsa_api' : 'local_decoder',
             'api_call_success' => $apiSuccess,
@@ -471,5 +598,42 @@ class VinDecoderService
         }
 
         return $mergedData;
+    }
+
+    // Methods for extensible architecture support
+
+    public function getDataSources(): array
+    {
+        return $this->isExtensible ? $this->dataSourceChain->getSources() : [];
+    }
+
+    public function getExecutionStrategy(): string
+    {
+        return $this->executionStrategy;
+    }
+
+    public function getMergeStrategy(): string
+    {
+        return $this->isExtensible ? $this->dataMerger->getMergeStrategy() : 'priority';
+    }
+
+    public function getCache(): ?VinCacheInterface
+    {
+        return $this->cache;
+    }
+
+    public function getCacheTTL(): int
+    {
+        return $this->cacheTtl;
+    }
+
+    public function getFieldPriorities(): array
+    {
+        return $this->isExtensible ? $this->dataMerger->getFieldPriorities() : [];
+    }
+
+    public function getConflictResolution(): string
+    {
+        return $this->isExtensible ? $this->dataMerger->getConflictResolution() : 'priority';
     }
 }
