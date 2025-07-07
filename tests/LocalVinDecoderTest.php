@@ -31,7 +31,7 @@ class LocalVinDecoderTest extends TestCase
         $this->assertEquals('Honda', $data['make']);
 
         // Check metadata
-        $this->assertEquals('local_decoder', $data['additional_info']['decoded_by']);
+        $this->assertEquals('local_decoder', $data['additional_info']['local_decoder_info']['decoded_by']);
     }
 
     /**

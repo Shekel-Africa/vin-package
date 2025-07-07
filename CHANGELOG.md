@@ -5,6 +5,57 @@ All notable changes to the Shekel VIN Package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Enhanced transmission inference system with comprehensive logic for Toyota, Honda, Ford, and general manufacturers
+- Separate `transmission_style` field in VehicleInfo value object for detailed transmission specifications
+- `getTransmissionStyle()` method in VehicleInfo class to access transmission style information
+- Intelligent transmission detection based on make, model, year, trim, and engine data
+- Support for extracting transmission type and style from existing API responses
+- Advanced transmission inference for specific vehicle models (e.g., Toyota Camry, Honda Civic, Ford F-150)
+- **NEW**: Comprehensive metric system support for dimensional data and fuel economy
+- `UnitConverter` utility class for converting between imperial and metric units
+- `DimensionalValue` value object for representing measurements with automatic unit conversion
+- Enhanced `getDimensions()` and `getMileage()` methods with unit conversion options ('original', 'imperial', 'metric', 'both')
+- Support for length conversions (inches ↔ cm/mm, feet ↔ meters)
+- Support for weight conversions (lbs ↔ kg)
+- Support for fuel economy conversions (mpg ↔ L/100km)
+- Support for volume conversions (cubic feet ↔ liters)
+
+### Changed
+
+- **BREAKING**: Restructured transmission field format - `transmission` now returns only "Manual" or "Automatic"
+- Transmission style information (e.g., "CVT", "6-Speed", "8-Speed") moved to separate `transmission_style` field
+- Updated all data sources (NHTSA, ClearVin, Local) to use new transmission format
+- Enhanced transmission inference algorithms to return both type and style separately
+- Improved API response parsing to extract transmission details when available
+- Enhanced `getDimensions()` method now accepts unit conversion parameters (backward compatible)
+- Enhanced `getMileage()` method now accepts unit conversion parameters (backward compatible)
+
+### Fixed
+
+- Fixed transmission inference logic to provide more accurate transmission data
+- Resolved issues with transmission data not being returned for certain VINs
+- Improved transmission detection for hybrid vehicles (e.g., Prius eCVT)
+- Enhanced compatibility between different data sources for transmission information
+- **BREAKING**: Resolved conflicting `decoded_by` metadata in `additional_info` vs `cache_metadata`
+- Fixed rich data loss issue where ClearVin dimensions, seating, pricing, and mileage were being discarded
+- Improved VIN structure data organization and consistency across data sources
+- Fixed cache_metadata duplication between top-level and additional_info
+- Fixed transmission_style field being lost in multi-source data merging scenarios
+
+### Improved
+
+- **BREAKING**: Restructured `additional_info` for better organization and data separation
+- VIN structure data (WMI, VDS, VIS, check_digit) now organized under `additional_info.vin_structure`
+- Source-specific details grouped under `additional_info.source_details[source_name]`
+- Rich vehicle data (dimensions, seating, pricing, mileage) now consistently preserved and accessible
+- Added new getter methods: `getVinStructure()`, `getSourceDetails()`, `getDimensions()`, `getSeating()`, `getPricing()`, `getMileage()`
+- Enhanced `isLocallyDecoded()` method to correctly handle multi-source scenarios
+- Improved data merging logic to prevent rich data loss and organize metadata properly
+
 ## [1.2.1] - 2025-04-15
 
 ### Added

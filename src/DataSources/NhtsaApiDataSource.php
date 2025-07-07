@@ -240,7 +240,13 @@ class NhtsaApiDataSource implements VinDataSourceInterface
             'manufacturer' => null,
             'country' => null,
             'additional_info' => [
-                'WMI' => substr($vin, 0, 3)
+                'vin_structure' => [
+                    'WMI' => substr($vin, 0, 3),
+                    'VDS' => substr($vin, 3, 6),
+                    'VIS' => substr($vin, 9, 8),
+                    'check_digit' => $vin[8] ?? '0'
+                ],
+                'nhtsa_details' => []
             ],
             'validation' => [
                 'error_code' => null,
@@ -317,8 +323,8 @@ class NhtsaApiDataSource implements VinDataSourceInterface
                     $vehicle['country'] = $value;
                     break;
                 default:
-                    // Store additional information
-                    $vehicle['additional_info'][$variable] = $value;
+                    // Store additional NHTSA information in organized structure
+                    $vehicle['additional_info']['nhtsa_details'][$variable] = $value;
                     break;
             }
         }

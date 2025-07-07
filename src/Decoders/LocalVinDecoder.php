@@ -249,13 +249,19 @@ class LocalVinDecoder
             'manufacturer' => null,
             'country' => null,
             'additional_info' => [
-                'decoded_by' => 'local_decoder',
-                'decoding_date' => date('Y-m-d H:i:s'),
-                'WMI' => $wmi,
-                'VDS' => substr($vin, 3, 6),
-                'VIS' => substr($vin, 9, 8),
-                'check_digit' => $vin[8] ?? '0',
-                'partial_info' => true
+                'vin_structure' => [
+                    'WMI' => $wmi,
+                    'VDS' => substr($vin, 3, 6),
+                    'VIS' => substr($vin, 9, 8),
+                    'check_digit' => $vin[8] ?? '0'
+                ],
+                'local_decoder_info' => [
+                    'decoded_by' => 'local_decoder',
+                    'decoding_date' => date('Y-m-d H:i:s'),
+                    'partial_info' => true,
+                    'wmi_database_version' => 'built-in',
+                    'year_encoding' => 'iso_3779'
+                ]
             ]
         ];
 

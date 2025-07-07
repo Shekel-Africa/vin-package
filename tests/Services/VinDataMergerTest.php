@@ -225,7 +225,9 @@ class VinDataMergerTest extends TestCase
             [
                 'make' => 'Toyota',
                 'additional_info' => [
-                    'WMI' => '5TD',
+                    'vin_structure' => [
+                        'WMI' => '5TD'
+                    ],
                     'source1_field' => 'value1'
                 ]
             ],
@@ -237,7 +239,9 @@ class VinDataMergerTest extends TestCase
             [
                 'model' => 'Camry',
                 'additional_info' => [
-                    'VDS' => 'YK3DC8',
+                    'vin_structure' => [
+                        'VDS' => 'YK3DC8'
+                    ],
                     'source2_field' => 'value2'
                 ]
             ],
@@ -248,10 +252,18 @@ class VinDataMergerTest extends TestCase
         $merged = $this->merger->merge($results);
 
         $expectedAdditionalInfo = [
-            'WMI' => '5TD',
-            'source1_field' => 'value1',
-            'VDS' => 'YK3DC8',
-            'source2_field' => 'value2'
+            'vin_structure' => [
+                'WMI' => '5TD',
+                'VDS' => 'YK3DC8'
+            ],
+            'source_details' => [
+                'source1' => [
+                    'source1_field' => 'value1'
+                ],
+                'source2' => [
+                    'source2_field' => 'value2'
+                ]
+            ]
         ];
 
         $this->assertEquals($expectedAdditionalInfo, $merged['additional_info']);

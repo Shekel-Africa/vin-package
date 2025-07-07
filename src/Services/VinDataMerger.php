@@ -26,6 +26,7 @@ class VinDataMerger
         'body_style' => ['nhtsa_api', 'clearvin', 'local'],
         'fuel_type' => ['nhtsa_api', 'clearvin', 'local'],
         'transmission' => ['nhtsa_api', 'clearvin', 'local'],
+        'transmission_style' => ['nhtsa_api', 'clearvin', 'local'],
         'manufacturer' => ['nhtsa_api', 'clearvin', 'local'],
         'country' => ['nhtsa_api', 'clearvin', 'local'],
         'validation' => ['nhtsa_api'],
@@ -104,7 +105,7 @@ class VinDataMerger
         // Merge standard fields
         $standardFields = [
             'make', 'model', 'year', 'trim', 'engine', 'plant',
-            'body_style', 'fuel_type', 'transmission', 'manufacturer', 'country'
+            'body_style', 'fuel_type', 'transmission', 'transmission_style', 'manufacturer', 'country'
         ];
 
         foreach ($standardFields as $field) {
@@ -236,8 +237,22 @@ class VinDataMerger
         $specialFields = ['dimensions', 'seating', 'pricing', 'mileage'];
 
         foreach ($specialFields as $field) {
+            // Prefer ClearVin for rich data, but accept from any source
             if (isset($sourceMap['clearvin'][$field])) {
                 $merged[$field] = $sourceMap['clearvin'][$field];
+            } else {
+                // Check other sources for this rich data
+                foreach ($sourceMap as $data) {
+                    if (isset($data[$field]) && !$this->isEmpty($data[$field])) {
+                        $merged[$field] = $data[$field];
+                        break;
+                    }
+                }
+            }
+
+            // Ensure the field exists even if null (for API consumers expecting the structure)
+            if (!isset($merged[$field])) {
+                $merged[$field] = null;
             }
         }
 
@@ -246,14 +261,42 @@ class VinDataMerger
 
     private function mergeAdditionalInfo(array $results): array
     {
-        $merged = [];
+        $merged = [
+            'vin_structure' => [],
+            'source_details' => []
+        ];
 
         foreach ($results as $result) {
             $data = $result->getData();
+            $source = $result->getSource();
+
             if (isset($data['additional_info']) && is_array($data['additional_info'])) {
-                $merged = array_merge($merged, $data['additional_info']);
+                // Merge VIN structure (should be consistent across sources)
+                if (isset($data['additional_info']['vin_structure'])) {
+                    $merged['vin_structure'] = array_merge(
+                        $merged['vin_structure'],
+                        $data['additional_info']['vin_structure']
+                    );
+                }
+
+                // Organize source-specific details
+                foreach ($data['additional_info'] as $key => $value) {
+                    if ($key === 'vin_structure') {
+                        continue; // Already handled above
+                    }
+
+                    // Group source-specific information
+                    if (is_array($value) && !empty($value)) {
+                        $merged['source_details'][$source][$key] = $value;
+                    } elseif (!is_array($value) && $value !== null) {
+                        $merged['source_details'][$source][$key] = $value;
+                    }
+                }
             }
         }
+
+        // Clean up empty source details
+        $merged['source_details'] = array_filter($merged['source_details']);
 
         return $merged;
     }

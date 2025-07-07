@@ -107,6 +107,14 @@ class VehicleInfo
             'is_valid' => true
         ];
 
+        // Handle rich data fields (store in additional_info for backward compatibility)
+        $richDataFields = ['dimensions', 'seating', 'pricing', 'mileage'];
+        foreach ($richDataFields as $field) {
+            if (isset($data[$field])) {
+                $instance->additionalInfo[$field] = $data[$field];
+            }
+        }
+
         // Handle cache metadata
         if (isset($data['cache_metadata'])) {
             $instance->additionalInfo['cache_metadata'] = $data['cache_metadata'];
@@ -135,16 +143,38 @@ class VehicleInfo
             'transmission_style' => $this->transmissionStyle,
             'manufacturer' => $this->manufacturer,
             'country' => $this->country,
-            'additional_info' => $this->additionalInfo,
+            'dimensions' => $this->getDimensions(),
+            'seating' => $this->getSeating(),
+            'pricing' => $this->getPricing(),
+            'mileage' => $this->getMileage(),
+            'additional_info' => $this->getCleanAdditionalInfo(),
             'validation' => $this->validation,
         ];
 
-        // Include cache metadata if present
+        // Include cache metadata at top level if present
         if (isset($this->additionalInfo['cache_metadata'])) {
             $result['cache_metadata'] = $this->additionalInfo['cache_metadata'];
         }
 
         return $result;
+    }
+
+    /**
+     * Get additional info without cache metadata to prevent duplication
+     *
+     * @return array
+     */
+    private function getCleanAdditionalInfo(): array
+    {
+        $cleanInfo = $this->additionalInfo;
+        
+        // Remove cache_metadata from additional_info since it's shown at top level
+        unset($cleanInfo['cache_metadata']);
+        
+        // Also remove rich data fields since they're shown at top level
+        unset($cleanInfo['dimensions'], $cleanInfo['seating'], $cleanInfo['pricing'], $cleanInfo['mileage']);
+        
+        return $cleanInfo;
     }
 
     /**
@@ -296,7 +326,20 @@ class VehicleInfo
      */
     public function isLocallyDecoded(): bool
     {
+        // Check if local decoder was used (either as primary or as one of multiple sources)
         $cacheMetadata = $this->additionalInfo['cache_metadata'] ?? [];
+
+        // For extensible architecture, check if local was one of the sources
+        if (isset($cacheMetadata['sources']) && is_array($cacheMetadata['sources'])) {
+            return in_array('local', $cacheMetadata['sources']) || in_array('local_decoder', $cacheMetadata['sources']);
+        }
+
+        // For legacy architecture, check direct decoded_by field
+        if (isset($this->additionalInfo['source_details']['local']['local_decoder_info']['decoded_by'])) {
+            return $this->additionalInfo['source_details']['local']['local_decoder_info']['decoded_by'] === 'local_decoder';
+        }
+
+        // Fallback to old format
         return ($cacheMetadata['decoded_by'] ?? $this->additionalInfo['decoded_by'] ?? '') === 'local_decoder';
     }
 
@@ -308,6 +351,103 @@ class VehicleInfo
     public function getValidation(): ?array
     {
         return $this->validation;
+    }
+
+    /**
+     * Get VIN structure information (WMI, VDS, VIS, check digit)
+     *
+     * @return array|null
+     */
+    public function getVinStructure(): ?array
+    {
+        return $this->additionalInfo['vin_structure'] ?? null;
+    }
+
+    /**
+     * Get source-specific details
+     *
+     * @param string|null $source Specific source name, or null for all sources
+     * @return array|null
+     */
+    public function getSourceDetails(?string $source = null): ?array
+    {
+        $sourceDetails = $this->additionalInfo['source_details'] ?? [];
+
+        if ($source !== null) {
+            return $sourceDetails[$source] ?? null;
+        }
+
+        return $sourceDetails ?: null;
+    }
+
+    /**
+     * Get vehicle dimensions (length, width, height, wheelbase)
+     *
+     * @param string $unit 'original', 'imperial', 'metric', or 'both'
+     * @param int $precision Number of decimal places for conversions
+     * @return array|null
+     */
+    public function getDimensions(string $unit = 'original', int $precision = 1): ?array
+    {
+        $dimensionsData = $this->getAdditionalValue('dimensions');
+        
+        if (!$dimensionsData || !is_array($dimensionsData)) {
+            return $dimensionsData;
+        }
+
+        // If requesting original format, return as-is
+        if ($unit === 'original') {
+            return $dimensionsData;
+        }
+
+        // Convert using DimensionalValue
+        $dimensionalValues = DimensionalValue::fromArray($dimensionsData);
+        return DimensionalValue::collectionToArray($dimensionalValues, $unit, $precision);
+    }
+
+    /**
+     * Get seating information
+     *
+     * @return array|null
+     */
+    public function getSeating(): ?array
+    {
+        return $this->getAdditionalValue('seating');
+    }
+
+    /**
+     * Get pricing information (MSRP, dealer invoice, etc.)
+     *
+     * @return array|null
+     */
+    public function getPricing(): ?array
+    {
+        return $this->getAdditionalValue('pricing');
+    }
+
+    /**
+     * Get fuel economy/mileage information
+     *
+     * @param string $unit 'original', 'imperial', 'metric', or 'both'
+     * @param int $precision Number of decimal places for conversions
+     * @return array|null
+     */
+    public function getMileage(string $unit = 'original', int $precision = 1): ?array
+    {
+        $mileageData = $this->getAdditionalValue('mileage');
+        
+        if (!$mileageData || !is_array($mileageData)) {
+            return $mileageData;
+        }
+
+        // If requesting original format, return as-is
+        if ($unit === 'original') {
+            return $mileageData;
+        }
+
+        // Convert using DimensionalValue
+        $dimensionalValues = DimensionalValue::fromArray($mileageData);
+        return DimensionalValue::collectionToArray($dimensionalValues, $unit, $precision);
     }
 
     /**

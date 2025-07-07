@@ -206,7 +206,12 @@ class ClearVinDataSource implements VinDataSourceInterface
             'pricing' => [],
             'mileage' => [],
             'additional_info' => [
-                'WMI' => substr($vin, 0, 3)
+                'vin_structure' => [
+                    'WMI' => substr($vin, 0, 3),
+                    'VDS' => substr($vin, 3, 6),
+                    'VIS' => substr($vin, 9, 8),
+                    'check_digit' => $vin[8] ?? '0'
+                ]
             ],
             'validation' => [
                 'error_code' => null,
@@ -262,16 +267,34 @@ class ClearVinDataSource implements VinDataSourceInterface
         $data['pricing']['msrp'] = $this->extractFieldNewFormat($markdown, 'MSRP') ?? $this->extractField($markdown, 'MSRP');
         $data['pricing']['dealerInvoice'] = $this->extractFieldNewFormat($markdown, 'Dealer Invoice') ?? $this->extractField($markdown, 'Dealer Invoice');
 
-        // Parse additional info using both formats
-        $data['additional_info']['origin'] = $data['country'];
-        $data['additional_info']['style'] = $data['body_style'];
-        $data['additional_info']['wheelDrive'] = $this->extractFieldNewFormat($markdown, 'Wheel Drive') ?? $this->extractField($markdown, 'Wheel Drive');
+        // Parse additional ClearVin specific fields
+        $data['additional_info']['clearvin_details'] = array_filter([
+            'wheel_drive' => $this->extractFieldNewFormat($markdown, 'Wheel Drive') ?? $this->extractField($markdown, 'Wheel Drive'),
+            'safety_rating' => $this->extractFieldNewFormat($markdown, 'Safety Rating') ?? $this->extractField($markdown, 'Safety Rating'),
+            'fuel_economy_combined' => $this->extractFieldNewFormat($markdown, 'Combined Fuel Economy') ?? $this->extractField($markdown, 'Combined Fuel Economy'),
+            'curb_weight' => $this->extractFieldNewFormat($markdown, 'Curb Weight') ?? $this->extractField($markdown, 'Curb Weight'),
+            'cargo_volume' => $this->extractFieldNewFormat($markdown, 'Cargo Volume') ?? $this->extractField($markdown, 'Cargo Volume')
+        ]);
 
-        // Clean up empty arrays, but keep the structure for compatibility
-        $data['dimensions'] = array_filter($data['dimensions']) ?: [];
-        $data['seating'] = array_filter($data['seating']) ?: [];
-        $data['pricing'] = array_filter($data['pricing']) ?: [];
-        $data['mileage'] = array_filter($data['mileage']) ?: [];
+        // Keep structured rich data even if some fields are empty
+        $data['dimensions'] = array_filter($data['dimensions']);
+        $data['seating'] = array_filter($data['seating']);
+        $data['pricing'] = array_filter($data['pricing']);
+        $data['mileage'] = array_filter($data['mileage']);
+
+        // Preserve rich data structure even if empty (important for API consumers)
+        if (empty($data['dimensions'])) {
+            $data['dimensions'] = null;
+        }
+        if (empty($data['seating'])) {
+            $data['seating'] = null;
+        }
+        if (empty($data['pricing'])) {
+            $data['pricing'] = null;
+        }
+        if (empty($data['mileage'])) {
+            $data['mileage'] = null;
+        }
 
         // If no transmission data was found, try to infer it
         if (empty($data['transmission'])) {

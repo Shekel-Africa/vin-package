@@ -134,7 +134,7 @@ class LocalVinDataSourceTest extends TestCase
         $result = $this->dataSource->decode($vin);
 
         $data = $result->getData();
-        $this->assertEquals('5TD', $data['additional_info']['WMI']);
+        $this->assertEquals('5TD', $data['additional_info']['vin_structure']['WMI']);
     }
 
     public function testExtractVDS()
@@ -143,7 +143,7 @@ class LocalVinDataSourceTest extends TestCase
         $result = $this->dataSource->decode($vin);
 
         $data = $result->getData();
-        $this->assertEquals('YK3DC8', $data['additional_info']['VDS']);
+        $this->assertEquals('YK3DC8', $data['additional_info']['vin_structure']['VDS']);
     }
 
     public function testExtractVIS()
@@ -152,7 +152,7 @@ class LocalVinDataSourceTest extends TestCase
         $result = $this->dataSource->decode($vin);
 
         $data = $result->getData();
-        $this->assertEquals('DS290235', $data['additional_info']['VIS']);
+        $this->assertEquals('DS290235', $data['additional_info']['vin_structure']['VIS']);
     }
 
     public function testManufacturerLookup()
