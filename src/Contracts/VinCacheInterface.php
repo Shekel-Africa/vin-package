@@ -14,7 +14,7 @@ interface VinCacheInterface
      * @return mixed|null The cached data or null if not found
      */
     public function get(string $key);
-    
+
     /**
      * Store an item in the cache
      *
@@ -24,7 +24,7 @@ interface VinCacheInterface
      * @return bool True if stored successfully
      */
     public function set(string $key, $value, ?int $ttl = null): bool;
-    
+
     /**
      * Remove an item from the cache
      *
@@ -32,7 +32,7 @@ interface VinCacheInterface
      * @return bool True if removed successfully
      */
     public function delete(string $key): bool;
-    
+
     /**
      * Check if an item exists in the cache and is valid
      *

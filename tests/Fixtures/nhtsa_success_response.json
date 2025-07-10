@@ -1,0 +1,169 @@
+{
+  "Count": 136,
+  "Message": "Results returned successfully",
+  "SearchCriteria": "VIN:5TDYK3DC8DS290235",
+  "Results": [
+    {
+      "Value": "5TDYK3DC8DS290235",
+      "ValueId": "",
+      "Variable": "Suggested VIN",
+      "VariableId": 142
+    },
+    {
+      "Value": "0",
+      "ValueId": "0",
+      "Variable": "Error Code",
+      "VariableId": 143
+    },
+    {
+      "Value": "",
+      "ValueId": "",
+      "Variable": "Error Text",
+      "VariableId": 144
+    },
+    {
+      "Value": "Passenger Car",
+      "ValueId": "",
+      "Variable": "Vehicle Type",
+      "VariableId": 39
+    },
+    {
+      "Value": "TOYOTA",
+      "ValueId": "440",
+      "Variable": "Make",
+      "VariableId": 26
+    },
+    {
+      "Value": "Sienna",
+      "ValueId": "1787",
+      "Variable": "Model",
+      "VariableId": 28
+    },
+    {
+      "Value": "2013",
+      "ValueId": "",
+      "Variable": "Model Year",
+      "VariableId": 29
+    },
+    {
+      "Value": "TOYOTA MOTOR MANUFACTURING, INDIANA, INC.",
+      "ValueId": "1067",
+      "Variable": "Manufacturer Name",
+      "VariableId": 27
+    },
+    {
+      "Value": "Princeton",
+      "ValueId": "",
+      "Variable": "Plant City",
+      "VariableId": 31
+    },
+    {
+      "Value": "UNITED STATES (USA)",
+      "ValueId": "",
+      "Variable": "Plant Country",
+      "VariableId": 75
+    },
+    {
+      "Value": "MULTIPURPOSE PASSENGER VEHICLE (MPV)",
+      "ValueId": "7",
+      "Variable": "Body Class",
+      "VariableId": 5
+    },
+    {
+      "Value": "3.5",
+      "ValueId": "",
+      "Variable": "Displacement (L)",
+      "VariableId": 11
+    },
+    {
+      "Value": "V-Shaped",
+      "ValueId": "",
+      "Variable": "Engine Configuration",
+      "VariableId": 13
+    },
+    {
+      "Value": "6",
+      "ValueId": "",
+      "Variable": "Engine Number of Cylinders",
+      "VariableId": 14
+    },
+    {
+      "Value": "Gasoline",
+      "ValueId": "",
+      "Variable": "Fuel Type - Primary",
+      "VariableId": 24
+    },
+    {
+      "Value": "Automatic",
+      "ValueId": "",
+      "Variable": "Transmission Style",
+      "VariableId": 37
+    },
+    {
+      "Value": "Front-Wheel Drive (FWD)",
+      "ValueId": "",
+      "Variable": "Drive Type",
+      "VariableId": 12
+    },
+    {
+      "Value": "XLE",
+      "ValueId": "",
+      "Variable": "Trim",
+      "VariableId": 38
+    },
+    {
+      "Value": "8",
+      "ValueId": "",
+      "Variable": "Seating Rows",
+      "VariableId": 33
+    },
+    {
+      "Value": "8",
+      "ValueId": "",
+      "Variable": "Seats",
+      "VariableId": 34
+    },
+    {
+      "Value": "Class 1: 6,000 lb or less (2,722 kg or less)",
+      "ValueId": "",
+      "Variable": "Gross Vehicle Weight Rating From",
+      "VariableId": 25
+    },
+    {
+      "Value": "Not Applicable",
+      "ValueId": "",
+      "Variable": "Bed Length (inches)",
+      "VariableId": 4
+    },
+    {
+      "Value": "Not Applicable",
+      "ValueId": "",
+      "Variable": "Bed Type",
+      "VariableId": 149
+    },
+    {
+      "Value": "200.2",
+      "ValueId": "",
+      "Variable": "Overall Length (inches)",
+      "VariableId": 30
+    },
+    {
+      "Value": "78.1",
+      "ValueId": "",
+      "Variable": "Overall Width (inches)",
+      "VariableId": 159
+    },
+    {
+      "Value": "70.7",
+      "ValueId": "",
+      "Variable": "Overall Height (inches)",
+      "VariableId": 158
+    },
+    {
+      "Value": "119.3",
+      "ValueId": "",
+      "Variable": "Wheelbase (inches)",
+      "VariableId": 111
+    }
+  ]
+}

@@ -57,21 +57,21 @@ class VinDecoderServiceTest extends TestCase
         $mock = new MockHandler([
             new Response(200, [], json_encode($mockResponse))
         ]);
-        
+
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
-        
+
         // Use reflection to set the client property on the service
         $decoderService = new VinDecoderService();
         $reflection = new ReflectionClass($decoderService);
-        
+
         $clientProperty = $reflection->getProperty('client');
         $clientProperty->setAccessible(true);
         $clientProperty->setValue($decoderService, $client);
-        
+
         // Test the decoder
         $result = $decoderService->decode('1HGCM82633A004352');
-        
+
         // Verify the result using the VehicleInfo getters
         $this->assertEquals('HONDA', $result->getMake());
         $this->assertEquals('CIVIC', $result->getModel());
@@ -79,20 +79,20 @@ class VinDecoderServiceTest extends TestCase
         $this->assertEquals('LX', $result->getTrim());
         $this->assertEquals('2.0L I4', $result->getEngine());
     }
-    
+
     /**
      * Test model year decoder
      */
     public function testDecodeModelYear()
     {
         $decoderService = new VinDecoderService();
-        
+
         // Test a few year codes
         $this->assertEquals('2010', $decoderService->decodeModelYear('A'));
         $this->assertEquals('2018', $decoderService->decodeModelYear('J'));
         $this->assertEquals('2023', $decoderService->decodeModelYear('P'));
         $this->assertEquals('2005', $decoderService->decodeModelYear('5'));
-        
+
         // Test unknown code
         $this->assertEquals('Unknown', $decoderService->decodeModelYear('Q'));
     }
@@ -108,18 +108,18 @@ class VinDecoderServiceTest extends TestCase
         // Create a mock cache implementation
         $mockCache = new class implements \Shekel\VinPackage\Contracts\VinCacheInterface {
             private $storage = [];
-            
+
             public function get(string $key)
             {
                 return $this->storage[$key] ?? null;
             }
-            
+
             public function set(string $key, $value, ?int $ttl = null): bool
             {
                 $this->storage[$key] = $value;
                 return true;
             }
-            
+
             public function delete(string $key): bool
             {
                 if (isset($this->storage[$key])) {
@@ -128,12 +128,12 @@ class VinDecoderServiceTest extends TestCase
                 }
                 return false;
             }
-            
+
             public function has(string $key): bool
             {
                 return isset($this->storage[$key]);
             }
-            
+
             public function getStorage(): array
             {
                 return $this->storage;
@@ -178,62 +178,66 @@ class VinDecoderServiceTest extends TestCase
             // Add a second mock response for the second API call to verify we use cache
             new Response(500, [], 'Server Error - This should not be called if cache works')
         ]);
-        
+
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
-        
+
         // Create a VinDecoderService with our mock cache
         $decoderService = new VinDecoderService(null, $mockCache);
-        
+
         // Use reflection to set the client property on the service
         $reflection = new ReflectionClass($decoderService);
         $clientProperty = $reflection->getProperty('client');
         $clientProperty->setAccessible(true);
         $clientProperty->setValue($decoderService, $client);
-        
+
         // First decode - should hit API and store in cache
         $result1 = $decoderService->decode($vin);
-        
+
         // Verify basic result
         $this->assertEquals('TOYOTA', $result1->getMake());
         $this->assertEquals('TUNDRA', $result1->getModel());
-        
+
         // Check if data was stored in cache
         $cacheKey = 'vin_data_' . md5($vin);
         $this->assertTrue($mockCache->has($cacheKey), 'VIN data was not stored in cache');
-        
+
         // Second decode - should use cached data and not hit API
         $result2 = $decoderService->decode($vin);
-        
+
         // Verify the second result matches
         $this->assertEquals('TOYOTA', $result2->getMake());
         $this->assertEquals('TUNDRA', $result2->getModel());
-        
+
         // Verify manufacturer code was cached
         // The WMI for this Toyota VIN is '5TF'
         $this->assertTrue($mockCache->has('manufacturer_codes'), 'Manufacturer codes were not cached');
         $manufacturerCodes = $mockCache->get('manufacturer_codes');
-        
+
         // The mock response includes 'TOYOTA MOTOR MANUFACTURING, TEXAS, INC.' as the manufacturer
         // Check that the WMI-to-manufacturer mapping was stored
         $this->assertIsArray($manufacturerCodes, 'Cached manufacturer codes is not an array');
         $this->assertArrayHasKey('5TF', $manufacturerCodes, 'Toyota WMI was not learned and cached');
         $this->assertEquals('TOYOTA MOTOR MANUFACTURING, TEXAS, INC.', $manufacturerCodes['5TF']);
-        
+
         // Test local decoding with the cached manufacturer code
         // Force local decoding by clearing VIN cache but keeping manufacturer codes
         $mockCache->delete($cacheKey);
-        
+
         // Set local fallback to true to ensure we use local decoding
         $decoderService->setLocalFallback(true);
-        
+
         // Decode locally
         $localResult = $decoderService->decodeLocally($vin);
-        
+
         // The local decoder should use our cached manufacturer codes
-        $this->assertStringContainsString('TOYOTA', $localResult->getManufacturer(), 'Local decoding did not use cached manufacturer code');
+        $this->assertStringContainsString(
+            'TOYOTA',
+            $localResult->getManufacturer(),
+            'Local decoding did not use cached manufacturer code'
+        );
     }
-    
+
     /**
      * Test clearing of cache
      */
@@ -241,22 +245,22 @@ class VinDecoderServiceTest extends TestCase
     {
         // Create a test VIN
         $vin = '1HGCM82633A004352';
-        
+
         // Create a mock cache implementation
         $mockCache = new class implements \Shekel\VinPackage\Contracts\VinCacheInterface {
             private $storage = [];
-            
+
             public function get(string $key)
             {
                 return $this->storage[$key] ?? null;
             }
-            
+
             public function set(string $key, $value, ?int $ttl = null): bool
             {
                 $this->storage[$key] = $value;
                 return true;
             }
-            
+
             public function delete(string $key): bool
             {
                 if (isset($this->storage[$key])) {
@@ -265,13 +269,13 @@ class VinDecoderServiceTest extends TestCase
                 }
                 return false;
             }
-            
+
             public function has(string $key): bool
             {
                 return isset($this->storage[$key]);
             }
         };
-        
+
         // Pre-populate the cache with some data
         $cacheKey = 'vin_data_' . md5($vin);
         $mockCache->set($cacheKey, [
@@ -279,16 +283,16 @@ class VinDecoderServiceTest extends TestCase
             'model' => 'CIVIC',
             'additional_info' => ['decoded_by' => 'test']
         ]);
-        
+
         // Create the service with our mock cache
         $decoderService = new VinDecoderService(null, $mockCache);
-        
+
         // Verify cache has the data
         $this->assertTrue($mockCache->has($cacheKey), 'Test data not stored in cache');
-        
+
         // Clear the cache
         $result = $decoderService->clearCacheForVin($vin);
-        
+
         // Verify result and cache state
         $this->assertTrue($result, 'clearCacheForVin returned false');
         $this->assertFalse($mockCache->has($cacheKey), 'VIN data still exists in cache after clearing');

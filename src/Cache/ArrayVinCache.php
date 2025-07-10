@@ -14,17 +14,17 @@ class ArrayVinCache implements VinCacheInterface
      * @var array Cache storage
      */
     private array $cache = [];
-    
+
     /**
      * @var array Cache expiration times
      */
     private array $expiration = [];
-    
+
     /**
      * @var int Default TTL in seconds
      */
     private int $defaultTtl;
-    
+
     /**
      * Constructor
      *
@@ -34,7 +34,7 @@ class ArrayVinCache implements VinCacheInterface
     {
         $this->defaultTtl = $defaultTtl;
     }
-    
+
     /**
      * @inheritDoc
      */
@@ -43,23 +43,23 @@ class ArrayVinCache implements VinCacheInterface
         if (!$this->has($key)) {
             return null;
         }
-        
+
         return $this->cache[$key];
     }
-    
+
     /**
      * @inheritDoc
      */
     public function set(string $key, $value, ?int $ttl = null): bool
     {
         $ttl = $ttl ?? $this->defaultTtl;
-        
+
         $this->cache[$key] = $value;
         $this->expiration[$key] = time() + $ttl;
-        
+
         return true;
     }
-    
+
     /**
      * @inheritDoc
      */
@@ -68,13 +68,13 @@ class ArrayVinCache implements VinCacheInterface
         if (!isset($this->cache[$key])) {
             return false;
         }
-        
+
         unset($this->cache[$key]);
         unset($this->expiration[$key]);
-        
+
         return true;
     }
-    
+
     /**
      * @inheritDoc
      */
@@ -84,14 +84,14 @@ class ArrayVinCache implements VinCacheInterface
         if (!isset($this->cache[$key])) {
             return false;
         }
-        
+
         // Check if expired
         if (isset($this->expiration[$key]) && time() > $this->expiration[$key]) {
             // Remove expired item
             $this->delete($key);
             return false;
         }
-        
+
         return true;
     }
 }
