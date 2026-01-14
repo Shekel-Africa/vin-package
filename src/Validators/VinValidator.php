@@ -46,6 +46,10 @@ class VinValidator
      */
     public function validate(string $vin, bool $returnErrors = false)
     {
+        $isJapaneseChassis = $this->isJapaneseVinOrChassis($vin);
+        if ($isJapaneseChassis) {
+            return true;
+        }
         // Check length
         if (strlen($vin) !== self::VIN_LENGTH) {
             return $returnErrors ?
@@ -119,6 +123,17 @@ class VinValidator
         }
 
         return true;
+    }
+
+    /**
+     * Determine if a VIN is Japanese style (with dash)
+     *
+     * @param string $vin
+     * @return bool
+     */
+    private function isJapaneseVinOrChassis(string $vin): bool
+    {
+        return preg_match('/^[A-Z0-9]{2,10}-[0-9]{3,10}$/', $vin) === 1;
     }
 
     /**
