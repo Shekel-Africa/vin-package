@@ -176,6 +176,10 @@ class VinDecoderService
      */
     public function decode(string $vin, bool $skipCache = false, bool $forceRefresh = false): VehicleInfo
     {
+        // handle special case for Japanese chassis numbers
+        if (strlen($vin) !== 17 && preg_match('/^[A-Z0-9]{2,10}-[0-9]{3,10}$/', $vin) === 1) {
+            throw new \InvalidArgumentException("We are having issues decoding this type of VIN at the moment. Please Enter details manually");
+        }
         // Validate VIN format
         if (strlen($vin) !== 17) {
             throw new \InvalidArgumentException("Invalid VIN format: VIN must be exactly 17 characters");
