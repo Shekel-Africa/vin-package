@@ -263,7 +263,8 @@ class VinDataMerger
     {
         $merged = [
             'vin_structure' => [],
-            'source_details' => []
+            'source_details' => [],
+            'api_response' => null
         ];
 
         foreach ($results as $result) {
@@ -279,10 +280,22 @@ class VinDataMerger
                     );
                 }
 
+                // Preserve api_response from NHTSA (or any API source)
+                // This is important for showing API validation errors
+                if (isset($data['additional_info']['api_response']) && $merged['api_response'] === null) {
+                    $merged['api_response'] = $data['additional_info']['api_response'];
+                }
+
                 // Organize source-specific details
                 foreach ($data['additional_info'] as $key => $value) {
                     if ($key === 'vin_structure') {
                         continue; // Already handled above
+                    }
+
+                    if ($key === 'api_response') {
+                        // Store in source_details but also keep at top level
+                        $merged['source_details'][$source][$key] = $value;
+                        continue;
                     }
 
                     // Group source-specific information
@@ -297,6 +310,11 @@ class VinDataMerger
 
         // Clean up empty source details
         $merged['source_details'] = array_filter($merged['source_details']);
+
+        // Remove api_response if null (clean output)
+        if ($merged['api_response'] === null) {
+            unset($merged['api_response']);
+        }
 
         return $merged;
     }

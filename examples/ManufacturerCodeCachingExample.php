@@ -27,7 +27,8 @@ try {
     echo "✓ Decoded Hyundai VIN successfully\n";
     echo "  Make: " . $hyundaiInfo->getMake() . "\n";
     echo "  Manufacturer: " . $hyundaiInfo->getManufacturer() . "\n";
-    echo "  WMI: " . $hyundaiInfo->getAdditionalValue('WMI') . "\n\n";
+    $vinStructure = $hyundaiInfo->getVinStructure();
+    echo "  WMI: " . ($vinStructure['WMI'] ?? 'N/A') . "\n\n";
 } catch (Exception $e) {
     echo "× Error decoding Hyundai VIN: " . $e->getMessage() . "\n";
     echo "  (API connection may be unavailable)\n\n";
@@ -39,7 +40,8 @@ try {
     echo "✓ Decoded Kia VIN successfully\n";
     echo "  Make: " . $kiaInfo->getMake() . "\n";
     echo "  Manufacturer: " . $kiaInfo->getManufacturer() . "\n";
-    echo "  WMI: " . $kiaInfo->getAdditionalValue('WMI') . "\n\n";
+    $kiaVinStructure = $kiaInfo->getVinStructure();
+    echo "  WMI: " . ($kiaVinStructure['WMI'] ?? 'N/A') . "\n\n";
 } catch (Exception $e) {
     echo "× Error decoding Kia VIN: " . $e->getMessage() . "\n";
     echo "  (API connection may be unavailable)\n\n";

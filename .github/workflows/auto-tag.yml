@@ -1,0 +1,71 @@
+name: Auto Tag on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  create-tag:
+    # Only run if the PR was merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Checkout the merge commit, not the PR head
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+
+      - name: Extract version from CHANGELOG
+        id: changelog
+        run: |
+          # Extract the first version number from CHANGELOG.md
+          # Looks for pattern: ## [X.Y.Z] or ## [X.Y.Z] - YYYY-MM-DD
+          VERSION=$(grep -m 1 -E '## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | sed 's/.*\[\([0-9]*\.[0-9]*\.[0-9]*\)\].*/\1/')
+
+          if [ -z "$VERSION" ]; then
+            echo "Error: Could not extract version from CHANGELOG.md"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          TAG="${{ steps.changelog.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag $TAG does not exist"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create and push tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          TAG="${{ steps.changelog.outputs.tag }}"
+          VERSION="${{ steps.changelog.outputs.version }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create annotated tag with message from changelog section
+          git tag -a "$TAG" -m "Release $VERSION"
+          git push origin "$TAG"
+
+          echo "Successfully created and pushed tag: $TAG"
+
+      - name: Skip tag creation (already exists)
+        if: steps.check_tag.outputs.exists == 'true'
+        run: |
+          echo "Skipping tag creation - ${{ steps.changelog.outputs.tag }} already exists"

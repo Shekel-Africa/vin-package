@@ -1,0 +1,712 @@
+{
+    "metadata": {
+        "version": "1.0.0",
+        "last_updated": "2025-01-15",
+        "description": "Japanese Domestic Market (JDM) chassis model codes database",
+        "sources": [
+            "Official manufacturer specifications",
+            "JDM vehicle registries",
+            "Enthusiast community documentation"
+        ]
+    },
+    "manufacturers": {
+        "toyota": {
+            "name": "Toyota Motor Corporation",
+            "country": "Japan",
+            "serial_length": 7,
+            "models": {
+                "JZA80": {
+                    "name": "Supra",
+                    "chassis_type": "A80",
+                    "engine_codes": {
+                        "JZ": "2JZ-GTE (3.0L I6 Twin Turbo)"
+                    },
+                    "production_years": {"start": 1993, "end": 2002},
+                    "body_styles": ["Coupe"]
+                },
+                "JZA70": {
+                    "name": "Supra",
+                    "chassis_type": "A70",
+                    "engine_codes": {
+                        "JZ": "1JZ-GTE (2.5L I6 Twin Turbo)"
+                    },
+                    "production_years": {"start": 1986, "end": 1993},
+                    "body_styles": ["Coupe"]
+                },
+                "AE86": {
+                    "name": "Corolla Levin/Trueno",
+                    "chassis_type": "E80",
+                    "engine_codes": {
+                        "A": "4A-GE (1.6L I4 DOHC)"
+                    },
+                    "production_years": {"start": 1983, "end": 1987},
+                    "body_styles": ["Coupe", "Hatchback"]
+                },
+                "AE92": {
+                    "name": "Corolla Levin/Trueno",
+                    "chassis_type": "E90",
+                    "engine_codes": {
+                        "A": "4A-GE (1.6L I4 DOHC)"
+                    },
+                    "production_years": {"start": 1987, "end": 1991},
+                    "body_styles": ["Coupe", "Hatchback"]
+                },
+                "AE101": {
+                    "name": "Corolla Levin/Trueno",
+                    "chassis_type": "E100",
+                    "engine_codes": {
+                        "A": "4A-GE 20V (1.6L I4 DOHC)"
+                    },
+                    "production_years": {"start": 1991, "end": 1995},
+                    "body_styles": ["Coupe", "Hatchback"]
+                },
+                "AE111": {
+                    "name": "Corolla Levin/Trueno",
+                    "chassis_type": "E110",
+                    "engine_codes": {
+                        "A": "4A-GE 20V Blacktop (1.6L I4 DOHC)"
+                    },
+                    "production_years": {"start": 1995, "end": 2000},
+                    "body_styles": ["Coupe", "Hatchback"]
+                },
+                "SW20": {
+                    "name": "MR2",
+                    "chassis_type": "W20",
+                    "engine_codes": {
+                        "S": "3S-GTE (2.0L I4 Turbo)"
+                    },
+                    "production_years": {"start": 1989, "end": 1999},
+                    "body_styles": ["Coupe"]
+                },
+                "AW11": {
+                    "name": "MR2",
+                    "chassis_type": "W10",
+                    "engine_codes": {
+                        "A": "4A-GE (1.6L I4 DOHC)"
+                    },
+                    "production_years": {"start": 1984, "end": 1989},
+                    "body_styles": ["Coupe"]
+                },
+                "JZX90": {
+                    "name": "Mark II/Chaser/Cresta",
+                    "chassis_type": "X90",
+                    "engine_codes": {
+                        "JZ": "1JZ-GTE (2.5L I6 Twin Turbo)"
+                    },
+                    "production_years": {"start": 1992, "end": 1996},
+                    "body_styles": ["Sedan"]
+                },
+                "JZX100": {
+                    "name": "Mark II/Chaser/Cresta",
+                    "chassis_type": "X100",
+                    "engine_codes": {
+                        "JZ": "1JZ-GTE VVTi (2.5L I6 Single Turbo)"
+                    },
+                    "production_years": {"start": 1996, "end": 2001},
+                    "body_styles": ["Sedan"]
+                },
+                "SV30": {
+                    "name": "Camry/Vista",
+                    "chassis_type": "V30",
+                    "engine_codes": {
+                        "S": "4S-FE (1.8L I4)",
+                        "3S": "3S-FE (2.0L I4)"
+                    },
+                    "production_years": {"start": 1990, "end": 1994},
+                    "body_styles": ["Sedan", "Wagon"]
+                },
+                "ST185": {
+                    "name": "Celica GT-Four",
+                    "chassis_type": "T180",
+                    "engine_codes": {
+                        "S": "3S-GTE (2.0L I4 Turbo AWD)"
+                    },
+                    "production_years": {"start": 1989, "end": 1993},
+                    "body_styles": ["Coupe"]
+                },
+                "ST205": {
+                    "name": "Celica GT-Four",
+                    "chassis_type": "T200",
+                    "engine_codes": {
+                        "S": "3S-GTE (2.0L I4 Turbo AWD)"
+                    },
+                    "production_years": {"start": 1994, "end": 1999},
+                    "body_styles": ["Coupe"]
+                },
+                "JZS161": {
+                    "name": "Aristo",
+                    "chassis_type": "S160",
+                    "engine_codes": {
+                        "JZ": "2JZ-GTE VVTi (3.0L I6 Twin Turbo)"
+                    },
+                    "production_years": {"start": 1997, "end": 2004},
+                    "body_styles": ["Sedan"]
+                }
+            }
+        },
+        "nissan": {
+            "name": "Nissan Motor Company",
+            "country": "Japan",
+            "serial_length": 6,
+            "models": {
+                "BNR32": {
+                    "name": "Skyline GT-R",
+                    "chassis_type": "R32",
+                    "engine_codes": {
+                        "BN": "RB26DETT (2.6L I6 Twin Turbo AWD)"
+                    },
+                    "production_years": {"start": 1989, "end": 1994},
+                    "body_styles": ["Coupe"]
+                },
+                "BCNR33": {
+                    "name": "Skyline GT-R",
+                    "chassis_type": "R33",
+                    "engine_codes": {
+                        "BCN": "RB26DETT (2.6L I6 Twin Turbo AWD)"
+                    },
+                    "production_years": {"start": 1995, "end": 1998},
+                    "body_styles": ["Coupe"]
+                },
+                "BNR34": {
+                    "name": "Skyline GT-R",
+                    "chassis_type": "R34",
+                    "engine_codes": {
+                        "BN": "RB26DETT (2.6L I6 Twin Turbo AWD)"
+                    },
+                    "production_years": {"start": 1999, "end": 2002},
+                    "body_styles": ["Coupe"]
+                },
+                "ECR33": {
+                    "name": "Skyline GTS-t",
+                    "chassis_type": "R33",
+                    "engine_codes": {
+                        "EC": "RB25DET (2.5L I6 Single Turbo)"
+                    },
+                    "production_years": {"start": 1993, "end": 1998},
+                    "body_styles": ["Coupe", "Sedan"]
+                },
+                "ER34": {
+                    "name": "Skyline 25GT-t",
+                    "chassis_type": "R34",
+                    "engine_codes": {
+                        "E": "RB25DET Neo (2.5L I6 Single Turbo)"
+                    },
+                    "production_years": {"start": 1998, "end": 2001},
+                    "body_styles": ["Coupe", "Sedan"]
+                },
+                "S13": {
+                    "name": "Silvia/180SX",
+                    "chassis_type": "S13",
+                    "engine_codes": {
+                        "S": "SR20DET (2.0L I4 Turbo)",
+                        "K": "KA24DE (2.4L I4)",
+                        "C": "CA18DET (1.8L I4 Turbo)"
+                    },
+                    "production_years": {"start": 1988, "end": 1994},
+                    "body_styles": ["Coupe", "Hatchback"]
+                },
+                "S14": {
+                    "name": "Silvia",
+                    "chassis_type": "S14",
+                    "engine_codes": {
+                        "S": "SR20DET (2.0L I4 Turbo)"
+                    },
+                    "production_years": {"start": 1993, "end": 1998},
+                    "body_styles": ["Coupe"]
+                },
+                "S15": {
+                    "name": "Silvia",
+                    "chassis_type": "S15",
+                    "engine_codes": {
+                        "S": "SR20DET (2.0L I4 Turbo)"
+                    },
+                    "production_years": {"start": 1999, "end": 2002},
+                    "body_styles": ["Coupe"]
+                },
+                "Z32": {
+                    "name": "Fairlady Z / 300ZX",
+                    "chassis_type": "Z32",
+                    "engine_codes": {
+                        "Z": "VG30DETT (3.0L V6 Twin Turbo)"
+                    },
+                    "production_years": {"start": 1989, "end": 2000},
+                    "body_styles": ["Coupe", "Convertible"]
+                },
+                "Z33": {
+                    "name": "Fairlady Z / 350Z",
+                    "chassis_type": "Z33",
+                    "engine_codes": {
+                        "Z": "VQ35DE (3.5L V6)"
+                    },
+                    "production_years": {"start": 2002, "end": 2008},
+                    "body_styles": ["Coupe", "Roadster"]
+                },
+                "RPS13": {
+                    "name": "180SX",
+                    "chassis_type": "S13",
+                    "engine_codes": {
+                        "RP": "SR20DET (2.0L I4 Turbo)"
+                    },
+                    "production_years": {"start": 1989, "end": 1998},
+                    "body_styles": ["Hatchback"]
+                }
+            }
+        },
+        "honda": {
+            "name": "Honda Motor Company",
+            "country": "Japan",
+            "serial_length": 7,
+            "models": {
+                "DC2": {
+                    "name": "Integra Type R",
+                    "chassis_type": "DC",
+                    "engine_codes": {
+                        "D": "B18C (1.8L I4 VTEC)"
+                    },
+                    "production_years": {"start": 1995, "end": 2001},
+                    "body_styles": ["Coupe"]
+                },
+                "DB8": {
+                    "name": "Integra Type R 4-door",
+                    "chassis_type": "DB",
+                    "engine_codes": {
+                        "D": "B18C (1.8L I4 VTEC)"
+                    },
+                    "production_years": {"start": 1995, "end": 2001},
+                    "body_styles": ["Sedan"]
+                },
+                "DC5": {
+                    "name": "Integra Type R",
+                    "chassis_type": "DC",
+                    "engine_codes": {
+                        "D": "K20A (2.0L I4 i-VTEC)"
+                    },
+                    "production_years": {"start": 2001, "end": 2006},
+                    "body_styles": ["Coupe"]
+                },
+                "EK9": {
+                    "name": "Civic Type R",
+                    "chassis_type": "EK",
+                    "engine_codes": {
+                        "E": "B16B (1.6L I4 VTEC)"
+                    },
+                    "production_years": {"start": 1997, "end": 2000},
+                    "body_styles": ["Hatchback"]
+                },
+                "EG6": {
+                    "name": "Civic SiR",
+                    "chassis_type": "EG",
+                    "engine_codes": {
+                        "E": "B16A (1.6L I4 VTEC)"
+                    },
+                    "production_years": {"start": 1991, "end": 1995},
+                    "body_styles": ["Hatchback"]
+                },
+                "EP3": {
+                    "name": "Civic Type R",
+                    "chassis_type": "EP",
+                    "engine_codes": {
+                        "E": "K20A (2.0L I4 i-VTEC)"
+                    },
+                    "production_years": {"start": 2001, "end": 2005},
+                    "body_styles": ["Hatchback"]
+                },
+                "FD2": {
+                    "name": "Civic Type R",
+                    "chassis_type": "FD",
+                    "engine_codes": {
+                        "F": "K20A (2.0L I4 i-VTEC)"
+                    },
+                    "production_years": {"start": 2007, "end": 2010},
+                    "body_styles": ["Sedan"]
+                },
+                "AP1": {
+                    "name": "S2000",
+                    "chassis_type": "AP",
+                    "engine_codes": {
+                        "A": "F20C (2.0L I4 VTEC)"
+                    },
+                    "production_years": {"start": 1999, "end": 2003},
+                    "body_styles": ["Roadster"]
+                },
+                "AP2": {
+                    "name": "S2000",
+                    "chassis_type": "AP",
+                    "engine_codes": {
+                        "A": "F22C (2.2L I4 VTEC)"
+                    },
+                    "production_years": {"start": 2004, "end": 2009},
+                    "body_styles": ["Roadster"]
+                },
+                "NA1": {
+                    "name": "NSX",
+                    "chassis_type": "NA",
+                    "engine_codes": {
+                        "N": "C30A (3.0L V6 VTEC)"
+                    },
+                    "production_years": {"start": 1990, "end": 1997},
+                    "body_styles": ["Coupe"]
+                },
+                "NA2": {
+                    "name": "NSX",
+                    "chassis_type": "NA",
+                    "engine_codes": {
+                        "N": "C32B (3.2L V6 VTEC)"
+                    },
+                    "production_years": {"start": 1997, "end": 2005},
+                    "body_styles": ["Coupe"]
+                }
+            }
+        },
+        "subaru": {
+            "name": "Subaru Corporation",
+            "country": "Japan",
+            "serial_length": 6,
+            "models": {
+                "GDA": {
+                    "name": "Impreza WRX",
+                    "chassis_type": "GD",
+                    "engine_codes": {
+                        "GD": "EJ205 (2.0L H4 Turbo)"
+                    },
+                    "production_years": {"start": 2000, "end": 2007},
+                    "body_styles": ["Sedan", "Wagon"]
+                },
+                "GDB": {
+                    "name": "Impreza WRX STI",
+                    "chassis_type": "GD",
+                    "engine_codes": {
+                        "GD": "EJ207 (2.0L H4 Twin Scroll Turbo)"
+                    },
+                    "production_years": {"start": 2000, "end": 2007},
+                    "body_styles": ["Sedan", "Wagon"]
+                },
+                "GC8": {
+                    "name": "Impreza WRX STI",
+                    "chassis_type": "GC",
+                    "engine_codes": {
+                        "GC": "EJ20G/EJ20K/EJ207 (2.0L H4 Turbo)"
+                    },
+                    "production_years": {"start": 1992, "end": 2000},
+                    "body_styles": ["Sedan", "Coupe"]
+                },
+                "GRB": {
+                    "name": "Impreza WRX STI",
+                    "chassis_type": "GR",
+                    "engine_codes": {
+                        "GR": "EJ207 (2.0L H4 Twin Scroll Turbo)"
+                    },
+                    "production_years": {"start": 2007, "end": 2014},
+                    "body_styles": ["Hatchback", "Sedan"]
+                },
+                "VAB": {
+                    "name": "WRX STI",
+                    "chassis_type": "VA",
+                    "engine_codes": {
+                        "VA": "EJ257 (2.5L H4 Turbo)"
+                    },
+                    "production_years": {"start": 2014, "end": 2021},
+                    "body_styles": ["Sedan"]
+                },
+                "BH5": {
+                    "name": "Legacy GT-B",
+                    "chassis_type": "BH",
+                    "engine_codes": {
+                        "BH": "EJ206 (2.0L H4 Twin Turbo)"
+                    },
+                    "production_years": {"start": 1998, "end": 2003},
+                    "body_styles": ["Wagon", "Sedan"]
+                },
+                "BP5": {
+                    "name": "Legacy GT",
+                    "chassis_type": "BP",
+                    "engine_codes": {
+                        "BP": "EJ20Y (2.0L H4 Single Turbo)"
+                    },
+                    "production_years": {"start": 2003, "end": 2009},
+                    "body_styles": ["Wagon", "Sedan"]
+                },
+                "SF5": {
+                    "name": "Forester STI",
+                    "chassis_type": "SF",
+                    "engine_codes": {
+                        "SF": "EJ205 (2.0L H4 Turbo)"
+                    },
+                    "production_years": {"start": 1997, "end": 2002},
+                    "body_styles": ["SUV"]
+                }
+            }
+        },
+        "mazda": {
+            "name": "Mazda Motor Corporation",
+            "country": "Japan",
+            "serial_length": 6,
+            "models": {
+                "FD3S": {
+                    "name": "RX-7",
+                    "chassis_type": "FD",
+                    "engine_codes": {
+                        "FD": "13B-REW (1.3L Rotary Twin Turbo)"
+                    },
+                    "production_years": {"start": 1991, "end": 2002},
+                    "body_styles": ["Coupe"]
+                },
+                "FC3S": {
+                    "name": "RX-7",
+                    "chassis_type": "FC",
+                    "engine_codes": {
+                        "FC": "13B-T (1.3L Rotary Turbo)"
+                    },
+                    "production_years": {"start": 1985, "end": 1991},
+                    "body_styles": ["Coupe", "Convertible"]
+                },
+                "SE3P": {
+                    "name": "RX-8",
+                    "chassis_type": "SE",
+                    "engine_codes": {
+                        "SE": "13B-MSP Renesis (1.3L Rotary)"
+                    },
+                    "production_years": {"start": 2003, "end": 2012},
+                    "body_styles": ["Coupe"]
+                },
+                "NA6CE": {
+                    "name": "MX-5 Miata/Roadster",
+                    "chassis_type": "NA",
+                    "engine_codes": {
+                        "NA": "B6ZE (1.6L I4)"
+                    },
+                    "production_years": {"start": 1989, "end": 1993},
+                    "body_styles": ["Roadster"]
+                },
+                "NA8C": {
+                    "name": "MX-5 Miata/Roadster",
+                    "chassis_type": "NA",
+                    "engine_codes": {
+                        "NA": "BP-ZE (1.8L I4)"
+                    },
+                    "production_years": {"start": 1993, "end": 1998},
+                    "body_styles": ["Roadster"]
+                },
+                "NB8C": {
+                    "name": "MX-5 Miata/Roadster",
+                    "chassis_type": "NB",
+                    "engine_codes": {
+                        "NB": "BP-VE (1.8L I4)"
+                    },
+                    "production_years": {"start": 1998, "end": 2005},
+                    "body_styles": ["Roadster"]
+                },
+                "NCEC": {
+                    "name": "MX-5 Miata/Roadster",
+                    "chassis_type": "NC",
+                    "engine_codes": {
+                        "NC": "LF-VE (2.0L I4)"
+                    },
+                    "production_years": {"start": 2005, "end": 2015},
+                    "body_styles": ["Roadster", "Coupe"]
+                },
+                "BK3P": {
+                    "name": "Mazdaspeed3/Axela",
+                    "chassis_type": "BK",
+                    "engine_codes": {
+                        "BK": "L3-VDT (2.3L I4 Turbo)"
+                    },
+                    "production_years": {"start": 2006, "end": 2009},
+                    "body_styles": ["Hatchback"]
+                }
+            }
+        },
+        "mitsubishi": {
+            "name": "Mitsubishi Motors Corporation",
+            "country": "Japan",
+            "serial_length": 7,
+            "models": {
+                "CT9A": {
+                    "name": "Lancer Evolution VII/VIII/IX",
+                    "chassis_type": "CT",
+                    "engine_codes": {
+                        "CT": "4G63T (2.0L I4 Turbo AWD)"
+                    },
+                    "production_years": {"start": 2001, "end": 2007},
+                    "body_styles": ["Sedan"]
+                },
+                "CP9A": {
+                    "name": "Lancer Evolution V/VI",
+                    "chassis_type": "CP",
+                    "engine_codes": {
+                        "CP": "4G63T (2.0L I4 Turbo AWD)"
+                    },
+                    "production_years": {"start": 1998, "end": 2001},
+                    "body_styles": ["Sedan"]
+                },
+                "CN9A": {
+                    "name": "Lancer Evolution IV",
+                    "chassis_type": "CN",
+                    "engine_codes": {
+                        "CN": "4G63T (2.0L I4 Turbo AWD)"
+                    },
+                    "production_years": {"start": 1996, "end": 1998},
+                    "body_styles": ["Sedan"]
+                },
+                "CE9A": {
+                    "name": "Lancer Evolution I/II/III",
+                    "chassis_type": "CE",
+                    "engine_codes": {
+                        "CE": "4G63T (2.0L I4 Turbo AWD)"
+                    },
+                    "production_years": {"start": 1992, "end": 1996},
+                    "body_styles": ["Sedan"]
+                },
+                "CZ4A": {
+                    "name": "Lancer Evolution X",
+                    "chassis_type": "CZ",
+                    "engine_codes": {
+                        "CZ": "4B11T (2.0L I4 Turbo AWD)"
+                    },
+                    "production_years": {"start": 2007, "end": 2016},
+                    "body_styles": ["Sedan"]
+                },
+                "Z15A": {
+                    "name": "GTO/3000GT",
+                    "chassis_type": "Z15",
+                    "engine_codes": {
+                        "Z": "6G72TT (3.0L V6 Twin Turbo AWD)"
+                    },
+                    "production_years": {"start": 1990, "end": 2000},
+                    "body_styles": ["Coupe"]
+                },
+                "EC5A": {
+                    "name": "Galant VR-4",
+                    "chassis_type": "EC",
+                    "engine_codes": {
+                        "EC": "6A13TT (2.5L V6 Twin Turbo AWD)"
+                    },
+                    "production_years": {"start": 1996, "end": 2003},
+                    "body_styles": ["Sedan"]
+                }
+            }
+        },
+        "suzuki": {
+            "name": "Suzuki Motor Corporation",
+            "country": "Japan",
+            "serial_length": 6,
+            "models": {
+                "EA11R": {
+                    "name": "Cappuccino",
+                    "chassis_type": "EA",
+                    "engine_codes": {
+                        "EA": "F6A (660cc I3 Turbo)"
+                    },
+                    "production_years": {"start": 1991, "end": 1998},
+                    "body_styles": ["Roadster"]
+                },
+                "EA21R": {
+                    "name": "Cappuccino",
+                    "chassis_type": "EA",
+                    "engine_codes": {
+                        "EA": "K6A (660cc I3 Turbo)"
+                    },
+                    "production_years": {"start": 1995, "end": 1998},
+                    "body_styles": ["Roadster"]
+                },
+                "ZC31S": {
+                    "name": "Swift Sport",
+                    "chassis_type": "ZC",
+                    "engine_codes": {
+                        "ZC": "M16A (1.6L I4)"
+                    },
+                    "production_years": {"start": 2005, "end": 2011},
+                    "body_styles": ["Hatchback"]
+                },
+                "ZC32S": {
+                    "name": "Swift Sport",
+                    "chassis_type": "ZC",
+                    "engine_codes": {
+                        "ZC": "M16A (1.6L I4)"
+                    },
+                    "production_years": {"start": 2011, "end": 2017},
+                    "body_styles": ["Hatchback"]
+                },
+                "HT81S": {
+                    "name": "Swift Sport",
+                    "chassis_type": "HT",
+                    "engine_codes": {
+                        "HT": "M15A (1.5L I4)"
+                    },
+                    "production_years": {"start": 2003, "end": 2005},
+                    "body_styles": ["Hatchback"]
+                }
+            }
+        },
+        "daihatsu": {
+            "name": "Daihatsu Motor Co.",
+            "country": "Japan",
+            "serial_length": 6,
+            "models": {
+                "L880K": {
+                    "name": "Copen",
+                    "chassis_type": "L880",
+                    "engine_codes": {
+                        "L": "JB-DET (660cc I4 Turbo)"
+                    },
+                    "production_years": {"start": 2002, "end": 2012},
+                    "body_styles": ["Roadster"]
+                },
+                "L152S": {
+                    "name": "Move RS",
+                    "chassis_type": "L150",
+                    "engine_codes": {
+                        "L": "JB-DET (660cc I4 Turbo)"
+                    },
+                    "production_years": {"start": 2002, "end": 2006},
+                    "body_styles": ["Kei car"]
+                }
+            }
+        }
+    },
+    "engine_code_prefixes": {
+        "toyota": {
+            "1": "1.0L class engines",
+            "2": "2.0L class engines",
+            "3": "3.0L class engines",
+            "4": "4.0L class engines",
+            "A": "A family (1.3-1.6L)",
+            "S": "S family (1.8-2.0L)",
+            "JZ": "JZ family (2.5-3.0L I6)",
+            "UZ": "UZ family (4.0L V8)"
+        },
+        "nissan": {
+            "RB": "RB family (2.0-3.0L I6)",
+            "SR": "SR family (1.6-2.0L I4)",
+            "VQ": "VQ family (2.5-3.5L V6)",
+            "VG": "VG family (3.0L V6)",
+            "CA": "CA family (1.6-2.0L I4)",
+            "KA": "KA family (2.4L I4)"
+        },
+        "honda": {
+            "B": "B family (1.6-1.8L I4 VTEC)",
+            "K": "K family (2.0-2.4L I4 i-VTEC)",
+            "F": "F family (2.0-2.2L I4 VTEC)",
+            "C": "C family (3.0-3.2L V6 VTEC)",
+            "H": "H family (2.2-2.3L I4 VTEC)"
+        },
+        "subaru": {
+            "EJ": "EJ family (1.5-2.5L H4)",
+            "FA": "FA family (2.0L H4 DIT)",
+            "FB": "FB family (2.0-2.5L H4)"
+        },
+        "mazda": {
+            "13B": "13B Rotary (1.3L)",
+            "BP": "BP family (1.8L I4)",
+            "B6": "B6 family (1.6L I4)",
+            "LF": "LF family (2.0L I4)",
+            "L3": "L3 family (2.3L I4)"
+        },
+        "mitsubishi": {
+            "4G63": "4G63 (2.0L I4)",
+            "4B11": "4B11 (2.0L I4 MIVEC)",
+            "6G72": "6G72 (3.0L V6)",
+            "6A13": "6A13 (2.5L V6)"
+        }
+    }
+}

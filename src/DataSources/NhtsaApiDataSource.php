@@ -246,7 +246,15 @@ class NhtsaApiDataSource implements VinDataSourceInterface
                     'VIS' => substr($vin, 9, 8),
                     'check_digit' => $vin[8] ?? '0'
                 ],
-                'nhtsa_details' => []
+                'nhtsa_details' => [],
+                'api_response' => [
+                    'source' => 'nhtsa_api',
+                    'has_error' => false,
+                    'error_code' => null,
+                    'error_text' => null,
+                    'suggested_vin' => null,
+                    'additional_error_text' => null
+                ]
             ],
             'validation' => [
                 'error_code' => null,
@@ -266,14 +274,28 @@ class NhtsaApiDataSource implements VinDataSourceInterface
             // Handle validation fields
             if ($variable === 'Error Code') {
                 $vehicle['validation']['error_code'] = $value;
+                $vehicle['additional_info']['api_response']['error_code'] = $value;
                 if ($value !== '0' && !empty($value)) {
                     $vehicle['validation']['is_valid'] = false;
+                    $vehicle['additional_info']['api_response']['has_error'] = true;
                 }
                 continue;
             }
 
             if ($variable === 'Error Text') {
                 $vehicle['validation']['error_text'] = $value;
+                $vehicle['additional_info']['api_response']['error_text'] = $value;
+                continue;
+            }
+
+            // Capture additional error information from NHTSA
+            if ($variable === 'Additional Error Text') {
+                $vehicle['additional_info']['api_response']['additional_error_text'] = $value;
+                continue;
+            }
+
+            if ($variable === 'Suggested VIN') {
+                $vehicle['additional_info']['api_response']['suggested_vin'] = $value;
                 continue;
             }
 
