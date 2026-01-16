@@ -5,9 +5,10 @@ namespace Shekel\VinPackage;
 use Shekel\VinPackage\Validators\VinValidator;
 use Shekel\VinPackage\Services\VinDecoderService;
 use Shekel\VinPackage\Contracts\VinCacheInterface;
+use Shekel\VinPackage\Contracts\VehicleIdentifierInterface;
 use Shekel\VinPackage\ValueObjects\VehicleInfo;
 
-class Vin
+class Vin implements VehicleIdentifierInterface
 {
     /**
      * @var string
@@ -58,6 +59,26 @@ class Vin
     public function getVin(): string
     {
         return $this->vin;
+    }
+
+    /**
+     * Get the raw identifier string (implements VehicleIdentifierInterface)
+     *
+     * @return string
+     */
+    public function getIdentifier(): string
+    {
+        return $this->vin;
+    }
+
+    /**
+     * Get the type of identifier (implements VehicleIdentifierInterface)
+     *
+     * @return string
+     */
+    public function getIdentifierType(): string
+    {
+        return 'vin';
     }
 
     /**

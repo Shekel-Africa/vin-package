@@ -66,7 +66,10 @@ class VinDecoderServiceTest extends TestCase
         $reflection = new ReflectionClass($decoderService);
 
         $clientProperty = $reflection->getProperty('client');
-        $clientProperty->setAccessible(true);
+        // Only call setAccessible() on PHP < 8.1 where it's required
+        if (PHP_VERSION_ID < 80100) {
+            $clientProperty->setAccessible(true);
+        }
         $clientProperty->setValue($decoderService, $client);
 
         // Test the decoder
@@ -188,7 +191,10 @@ class VinDecoderServiceTest extends TestCase
         // Use reflection to set the client property on the service
         $reflection = new ReflectionClass($decoderService);
         $clientProperty = $reflection->getProperty('client');
-        $clientProperty->setAccessible(true);
+        // Only call setAccessible() on PHP < 8.1 where it's required
+        if (PHP_VERSION_ID < 80100) {
+            $clientProperty->setAccessible(true);
+        }
         $clientProperty->setValue($decoderService, $client);
 
         // First decode - should hit API and store in cache

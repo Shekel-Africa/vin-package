@@ -29,7 +29,7 @@ class DimensionalValue
     public static function fromString(string $dimensionString): self
     {
         $parsed = UnitConverter::parseDimensionString($dimensionString);
-        
+
         return new self(
             $parsed['value'],
             $parsed['unit'],
@@ -103,7 +103,7 @@ class DimensionalValue
         }
 
         $convertedValue = UnitConverter::convert($this->value, $this->unit, $targetUnit, $precision);
-        
+
         if ($convertedValue === null) {
             return null;
         }
@@ -138,7 +138,7 @@ class DimensionalValue
         ];
 
         $targetUnit = $imperialMappings[$this->unit] ?? null;
-        
+
         if ($targetUnit) {
             return $this->convertTo($targetUnit, $precision);
         }
@@ -176,7 +176,7 @@ class DimensionalValue
         ];
 
         $targetUnit = $metricMappings[$this->unit] ?? null;
-        
+
         if ($targetUnit) {
             return $this->convertTo($targetUnit, $precision);
         }
@@ -270,7 +270,7 @@ class DimensionalValue
     public static function fromArray(array $dimensions): array
     {
         $result = [];
-        
+
         foreach ($dimensions as $key => $value) {
             if (is_string($value)) {
                 $result[$key] = self::fromString($value);
@@ -280,7 +280,7 @@ class DimensionalValue
                 $result[$key] = new self(null, null, (string) $value);
             }
         }
-        
+
         return $result;
     }
 
@@ -292,10 +292,13 @@ class DimensionalValue
      * @param int $precision
      * @return array
      */
-    public static function collectionToArray(array $dimensionalValues, string $format = 'original', int $precision = 1): array
-    {
+    public static function collectionToArray(
+        array $dimensionalValues,
+        string $format = 'original',
+        int $precision = 1
+    ): array {
         $result = [];
-        
+
         foreach ($dimensionalValues as $key => $dimValue) {
             if (!($dimValue instanceof self)) {
                 $result[$key] = $dimValue;
@@ -307,12 +310,12 @@ class DimensionalValue
                     $converted = $dimValue->toImperial($precision);
                     $result[$key] = $converted ? $converted->format($precision) : $dimValue->getOriginalString();
                     break;
-                    
+
                 case 'metric':
                     $converted = $dimValue->toMetric($precision);
                     $result[$key] = $converted ? $converted->format($precision) : $dimValue->getOriginalString();
                     break;
-                    
+
                 case 'both':
                     $imperial = $dimValue->toImperial($precision);
                     $metric = $dimValue->toMetric($precision);
@@ -322,14 +325,14 @@ class DimensionalValue
                         'metric' => $metric ? $metric->format($precision) : null
                     ];
                     break;
-                    
+
                 case 'original':
                 default:
                     $result[$key] = $dimValue->getOriginalString();
                     break;
             }
         }
-        
+
         return $result;
     }
 }

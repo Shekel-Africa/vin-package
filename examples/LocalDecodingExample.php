@@ -22,7 +22,7 @@ echo "Year: " . $vehicleInfo->getYear() . "\n";
 echo "Make: " . $vehicleInfo->getMake() . "\n";
 echo "Country: " . $vehicleInfo->getCountry() . "\n";
 echo "Plant: " . $vehicleInfo->getPlant() . "\n";
-echo "Model" . $vehicleInfo->getModel() . "\n\n";
+echo "Model: " . $vehicleInfo->getModel() . "\n\n";
 
 // Example 2: Using Vin class with local fallback
 echo "Example 2: Using Vin with local fallback\n";

@@ -47,9 +47,9 @@ echo "  Model Year: " . $vinObj->getModelYear() . "\n\n";
 echo "Local decoding info for the generated VIN:\n";
 try {
     $info = $vinObj->getLocalVehicleInfo();
-    echo "  Make: " . ($info['make'] ?? "Unknown") . "\n";
-    echo "  Country: " . ($info['country'] ?? "Unknown") . "\n";
-    echo "  Year: " . ($info['year'] ?? "Unknown") . "\n";
+    echo "  Make: " . ($info->getMake() ?? "Unknown") . "\n";
+    echo "  Country: " . ($info->getCountry() ?? "Unknown") . "\n";
+    echo "  Year: " . ($info->getYear() ?? "Unknown") . "\n";
 } catch (Exception $e) {
     echo "  Error: " . $e->getMessage() . "\n";
 }

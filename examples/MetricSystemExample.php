@@ -8,17 +8,17 @@ use Shekel\VinPackage\Utils\UnitConverter;
 
 echo "=== VIN Package Metric System Support Example ===\n\n";
 
-// Initialize VIN decoder
-$vinDecoder = new Vin();
-
 // Example VIN (Toyota Sienna)
-$vin = '5TDYK3DC8DS290235';
+$vinString = '5TDYK3DC8DS290235';
 
-echo "Decoding VIN: {$vin}\n\n";
+// Initialize VIN decoder with the VIN
+$vin = new Vin($vinString);
+
+echo "Decoding VIN: {$vinString}\n\n";
 
 try {
     // Get vehicle information
-    $vehicleInfo = $vinDecoder->decode($vin);
+    $vehicleInfo = $vin->getVehicleInfo();
     
     echo "Vehicle: {$vehicleInfo->getYear()} {$vehicleInfo->getMake()} {$vehicleInfo->getModel()}\n";
     echo "Trim: {$vehicleInfo->getTrim()}\n\n";

@@ -167,13 +167,13 @@ class VehicleInfo
     private function getCleanAdditionalInfo(): array
     {
         $cleanInfo = $this->additionalInfo;
-        
+
         // Remove cache_metadata from additional_info since it's shown at top level
         unset($cleanInfo['cache_metadata']);
-        
+
         // Also remove rich data fields since they're shown at top level
         unset($cleanInfo['dimensions'], $cleanInfo['seating'], $cleanInfo['pricing'], $cleanInfo['mileage']);
-        
+
         return $cleanInfo;
     }
 
@@ -335,8 +335,9 @@ class VehicleInfo
         }
 
         // For legacy architecture, check direct decoded_by field
-        if (isset($this->additionalInfo['source_details']['local']['local_decoder_info']['decoded_by'])) {
-            return $this->additionalInfo['source_details']['local']['local_decoder_info']['decoded_by'] === 'local_decoder';
+        $localDecoderInfo = $this->additionalInfo['source_details']['local']['local_decoder_info'] ?? null;
+        if (isset($localDecoderInfo['decoded_by'])) {
+            return $localDecoderInfo['decoded_by'] === 'local_decoder';
         }
 
         // Fallback to old format
@@ -361,6 +362,47 @@ class VehicleInfo
     public function getVinStructure(): ?array
     {
         return $this->additionalInfo['vin_structure'] ?? null;
+    }
+
+    /**
+     * Get Japanese chassis number structure information
+     *
+     * @return array|null Returns array with 'model_code', 'serial_number', etc., or null if not a Japanese vehicle
+     */
+    public function getChassisNumberStructure(): ?array
+    {
+        return $this->additionalInfo['chassis_number_structure'] ?? null;
+    }
+
+    /**
+     * Check if the vehicle data was decoded from a Japanese chassis number
+     *
+     * @return bool
+     */
+    public function isJapaneseVehicle(): bool
+    {
+        $identifierType = $this->additionalInfo['identifier_type'] ?? null;
+        return $identifierType === 'japanese_chassis_number';
+    }
+
+    /**
+     * Get the type of vehicle identifier that was used
+     *
+     * @return string|null 'vin', 'japanese_chassis_number', or null if unknown
+     */
+    public function getIdentifierType(): ?string
+    {
+        return $this->additionalInfo['identifier_type'] ?? null;
+    }
+
+    /**
+     * Get the production years range for Japanese vehicles
+     *
+     * @return string|null Production years range (e.g., "1993-2002"), or null if not available
+     */
+    public function getProductionYears(): ?string
+    {
+        return $this->additionalInfo['production_years'] ?? null;
     }
 
     /**
@@ -390,7 +432,7 @@ class VehicleInfo
     public function getDimensions(string $unit = 'original', int $precision = 1): ?array
     {
         $dimensionsData = $this->getAdditionalValue('dimensions');
-        
+
         if (!$dimensionsData || !is_array($dimensionsData)) {
             return $dimensionsData;
         }
@@ -435,7 +477,7 @@ class VehicleInfo
     public function getMileage(string $unit = 'original', int $precision = 1): ?array
     {
         $mileageData = $this->getAdditionalValue('mileage');
-        
+
         if (!$mileageData || !is_array($mileageData)) {
             return $mileageData;
         }
@@ -478,5 +520,102 @@ class VehicleInfo
     public function getErrorText(): ?string
     {
         return $this->validation['error_text'] ?? null;
+    }
+
+    /**
+     * Check if the API reported any validation errors for this VIN
+     *
+     * Note: This indicates that the API (e.g., NHTSA) found issues with the VIN,
+     * but the VIN format itself might still be valid. The API may still return
+     * partial vehicle information even when reporting errors.
+     *
+     * @return bool
+     */
+    public function hasApiValidationError(): bool
+    {
+        // Check the api_response in additional_info (new format)
+        $apiResponse = $this->getApiResponse();
+        if ($apiResponse && isset($apiResponse['has_error'])) {
+            return $apiResponse['has_error'] === true;
+        }
+
+        // Fallback to validation array
+        return !$this->isValid();
+    }
+
+    /**
+     * Get the full API response details including errors
+     *
+     * Returns information about the API's response including:
+     * - source: The API that provided the response (e.g., 'nhtsa_api')
+     * - has_error: Whether the API reported any errors
+     * - error_code: The error code from the API
+     * - error_text: Human-readable error message
+     * - suggested_vin: If the API suggests a corrected VIN
+     * - additional_error_text: Any additional error details
+     *
+     * @return array|null
+     */
+    public function getApiResponse(): ?array
+    {
+        // Check in additional_info directly
+        if (isset($this->additionalInfo['api_response'])) {
+            return $this->additionalInfo['api_response'];
+        }
+
+        // Check in source_details for NHTSA
+        if (isset($this->additionalInfo['source_details']['nhtsa_api']['api_response'])) {
+            return $this->additionalInfo['source_details']['nhtsa_api']['api_response'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the suggested VIN if the API provided one
+     *
+     * When the NHTSA API detects an error in the VIN, it may suggest
+     * a corrected version. This method returns that suggestion if available.
+     *
+     * @return string|null
+     */
+    public function getSuggestedVin(): ?string
+    {
+        $apiResponse = $this->getApiResponse();
+        return $apiResponse['suggested_vin'] ?? null;
+    }
+
+    /**
+     * Get additional error text from the API
+     *
+     * @return string|null
+     */
+    public function getAdditionalErrorText(): ?string
+    {
+        $apiResponse = $this->getApiResponse();
+        return $apiResponse['additional_error_text'] ?? null;
+    }
+
+    /**
+     * Get a summary of all validation issues
+     *
+     * Returns a structured array with all validation-related information
+     * from both format validation and API validation.
+     *
+     * @return array
+     */
+    public function getValidationSummary(): array
+    {
+        $apiResponse = $this->getApiResponse();
+
+        return [
+            'is_valid' => $this->isValid(),
+            'has_api_error' => $this->hasApiValidationError(),
+            'error_code' => $this->getErrorCode(),
+            'error_text' => $this->getErrorText(),
+            'additional_error_text' => $this->getAdditionalErrorText(),
+            'suggested_vin' => $this->getSuggestedVin(),
+            'api_source' => $apiResponse['source'] ?? null
+        ];
     }
 }

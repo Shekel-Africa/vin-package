@@ -238,42 +238,60 @@ class ClearVinDataSource implements VinDataSourceInterface
         $data['trim'] = $this->extractFieldNewFormat($markdown, 'Trim') ?? $this->extractField($markdown, 'Trim');
 
         // Parse engine using both formats
-        $data['engine'] = $this->extractFieldNewFormat($markdown, 'Engine') ?? $this->extractField($markdown, 'Engine');
+        $data['engine'] = $this->extractFieldNewFormat($markdown, 'Engine')
+            ?? $this->extractField($markdown, 'Engine');
 
         // Parse origin/country using both formats
-        $data['country'] = $this->extractFieldNewFormat($markdown, 'Made in') ?? $this->extractField($markdown, 'Origin');
+        $data['country'] = $this->extractFieldNewFormat($markdown, 'Made in')
+            ?? $this->extractField($markdown, 'Origin');
 
         // Parse body style - try both formats
-        $data['body_style'] = $this->extractFieldNewFormat($markdown, 'Style') ?? $this->extractField($markdown, 'Style');
+        $data['body_style'] = $this->extractFieldNewFormat($markdown, 'Style')
+            ?? $this->extractField($markdown, 'Style');
 
         // Parse mechanical information using both formats
-        $data['mileage']['city'] = $this->extractFieldNewFormat($markdown, 'City Mileage') ?? $this->extractField($markdown, 'City Mileage');
-        $data['mileage']['highway'] = $this->extractFieldNewFormat($markdown, 'Highway Mileage') ?? $this->extractField($markdown, 'Highway Mileage');
+        $data['mileage']['city'] = $this->extractFieldNewFormat($markdown, 'City Mileage')
+            ?? $this->extractField($markdown, 'City Mileage');
+        $data['mileage']['highway'] = $this->extractFieldNewFormat($markdown, 'Highway Mileage')
+            ?? $this->extractField($markdown, 'Highway Mileage');
 
         // Parse dimensions using both formats
-        $data['dimensions']['length'] = $this->extractFieldNewFormat($markdown, 'Length') ?? $this->extractField($markdown, 'Length');
-        $data['dimensions']['width'] = $this->extractFieldNewFormat($markdown, 'Width') ?? $this->extractField($markdown, 'Width');
-        $data['dimensions']['height'] = $this->extractFieldNewFormat($markdown, 'Height') ?? $this->extractField($markdown, 'Height');
-        $data['dimensions']['wheelbase'] = $this->extractFieldNewFormat($markdown, 'Wheelbase') ?? $this->extractField($markdown, 'Wheelbase');
+        $data['dimensions']['length'] = $this->extractFieldNewFormat($markdown, 'Length')
+            ?? $this->extractField($markdown, 'Length');
+        $data['dimensions']['width'] = $this->extractFieldNewFormat($markdown, 'Width')
+            ?? $this->extractField($markdown, 'Width');
+        $data['dimensions']['height'] = $this->extractFieldNewFormat($markdown, 'Height')
+            ?? $this->extractField($markdown, 'Height');
+        $data['dimensions']['wheelbase'] = $this->extractFieldNewFormat($markdown, 'Wheelbase')
+            ?? $this->extractField($markdown, 'Wheelbase');
 
         // Parse seating using both formats
-        $standardSeating = $this->extractFieldNewFormat($markdown, 'Standard Seating') ?? $this->extractField($markdown, 'Standard Seating');
+        $standardSeating = $this->extractFieldNewFormat($markdown, 'Standard Seating')
+            ?? $this->extractField($markdown, 'Standard Seating');
         if ($standardSeating && is_numeric($standardSeating)) {
             $data['seating']['standardSeating'] = (int)$standardSeating;
         }
-        $data['seating']['passengerVolume'] = $this->extractFieldNewFormat($markdown, 'Passenger Volume') ?? $this->extractField($markdown, 'Passenger Volume');
+        $data['seating']['passengerVolume'] = $this->extractFieldNewFormat($markdown, 'Passenger Volume')
+            ?? $this->extractField($markdown, 'Passenger Volume');
 
         // Parse pricing using both formats
-        $data['pricing']['msrp'] = $this->extractFieldNewFormat($markdown, 'MSRP') ?? $this->extractField($markdown, 'MSRP');
-        $data['pricing']['dealerInvoice'] = $this->extractFieldNewFormat($markdown, 'Dealer Invoice') ?? $this->extractField($markdown, 'Dealer Invoice');
+        $data['pricing']['msrp'] = $this->extractFieldNewFormat($markdown, 'MSRP')
+            ?? $this->extractField($markdown, 'MSRP');
+        $data['pricing']['dealerInvoice'] = $this->extractFieldNewFormat($markdown, 'Dealer Invoice')
+            ?? $this->extractField($markdown, 'Dealer Invoice');
 
         // Parse additional ClearVin specific fields
         $data['additional_info']['clearvin_details'] = array_filter([
-            'wheel_drive' => $this->extractFieldNewFormat($markdown, 'Wheel Drive') ?? $this->extractField($markdown, 'Wheel Drive'),
-            'safety_rating' => $this->extractFieldNewFormat($markdown, 'Safety Rating') ?? $this->extractField($markdown, 'Safety Rating'),
-            'fuel_economy_combined' => $this->extractFieldNewFormat($markdown, 'Combined Fuel Economy') ?? $this->extractField($markdown, 'Combined Fuel Economy'),
-            'curb_weight' => $this->extractFieldNewFormat($markdown, 'Curb Weight') ?? $this->extractField($markdown, 'Curb Weight'),
-            'cargo_volume' => $this->extractFieldNewFormat($markdown, 'Cargo Volume') ?? $this->extractField($markdown, 'Cargo Volume')
+            'wheel_drive' => $this->extractFieldNewFormat($markdown, 'Wheel Drive')
+                ?? $this->extractField($markdown, 'Wheel Drive'),
+            'safety_rating' => $this->extractFieldNewFormat($markdown, 'Safety Rating')
+                ?? $this->extractField($markdown, 'Safety Rating'),
+            'fuel_economy_combined' => $this->extractFieldNewFormat($markdown, 'Combined Fuel Economy')
+                ?? $this->extractField($markdown, 'Combined Fuel Economy'),
+            'curb_weight' => $this->extractFieldNewFormat($markdown, 'Curb Weight')
+                ?? $this->extractField($markdown, 'Curb Weight'),
+            'cargo_volume' => $this->extractFieldNewFormat($markdown, 'Cargo Volume')
+                ?? $this->extractField($markdown, 'Cargo Volume')
         ]);
 
         // Keep structured rich data even if some fields are empty
