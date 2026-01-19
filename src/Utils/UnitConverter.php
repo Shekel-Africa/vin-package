@@ -157,7 +157,7 @@ class UnitConverter
         if ($mpg <= 0) {
             return 0;
         }
-        
+
         // Formula: L/100km = 235.214583 / mpg
         return round(235.214583 / $mpg, $precision);
     }
@@ -174,7 +174,7 @@ class UnitConverter
         if ($l100km <= 0) {
             return 0;
         }
-        
+
         // Formula: mpg = 235.214583 / (L/100km)
         return round(235.214583 / $l100km, $precision);
     }
@@ -188,7 +188,7 @@ class UnitConverter
     public static function parseDimensionString(string $dimensionString): array
     {
         $trimmed = trim($dimensionString);
-        
+
         if (empty($trimmed) || $trimmed === 'N/A') {
             return [
                 'value' => null,

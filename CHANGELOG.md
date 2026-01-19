@@ -5,6 +5,44 @@ All notable changes to the Shekel VIN Package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-01-15
+
+### Added
+
+- **Japanese Chassis Number Support**: Full support for Japanese Domestic Market (JDM) chassis numbers
+  - New `JapaneseChassisNumber` class for validating and decoding JDM frame numbers (e.g., `JZA80-1004956`)
+  - `JapaneseChassisValidator` for format validation (MODEL_CODE-SERIAL pattern)
+  - `JapaneseChassisDecoder` with database of 50+ popular JDM model codes
+  - Support for Toyota, Nissan, Honda, Subaru, Mazda, and Mitsubishi chassis codes
+  - Methods: `getModelCode()`, `getSerialNumber()`, `getMake()`, `getModel()`, `getEngine()`
+- **Auto-Detection Factory**: `VehicleIdentifierFactory` for automatic identifier type detection
+  - `create()` - Returns appropriate handler (`Vin` or `JapaneseChassisNumber`)
+  - `detectType()` - Detect identifier type without creating instance
+  - `analyzeIdentifier()` - Get detection confidence score and reasoning
+- **API Validation Error Handling**: Enhanced access to NHTSA API validation errors
+  - `hasApiValidationError()` - Check if API reported validation errors
+  - `getApiResponse()` - Get full API response details including error info
+  - `getSuggestedVin()` - Get API-suggested corrected VIN when available
+  - `getAdditionalErrorText()` - Get additional error details from API
+  - `getValidationSummary()` - Get complete validation summary array
+- **VehicleIdentifierInterface**: Common interface for VIN and Japanese chassis numbers
+- New methods in `VehicleInfo`: `isJapaneseVehicle()`, `getChassisNumberStructure()`, `getIdentifierType()`, `getProductionYears()`
+- GitHub Actions workflow for automatic tagging on PR merge based on CHANGELOG version
+
+### Changed
+
+- Enhanced `NhtsaApiDataSource` to capture and preserve API validation errors more prominently
+- Updated `VinDataMerger` to preserve `api_response` data when merging from multiple sources
+- Improved README documentation with regional VIN support table and JDM examples
+
+### Fixed
+
+- API validation errors are now properly accessible through `VehicleInfo` even when data merging occurs
+- Preserved `suggested_vin` and `additional_error_text` fields from NHTSA API responses
+- Fixed PHP 8.5 `setAccessible()` deprecation warning in tests while maintaining PHP 8.0 compatibility
+- Fixed PSR-12 code style violations (line length issues in ClearVinDataSource, VehicleInfo, DimensionalValue)
+- Updated example files to use current VehicleInfo getter methods instead of deprecated array access
+
 ## [2.0.0] - 2025-07-09
 
 ### Added

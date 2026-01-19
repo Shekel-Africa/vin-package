@@ -33,6 +33,7 @@
         "test:coverage": "phpunit tests --coverage-html coverage",
         "test:unit": "phpunit tests/VinValidatorTest.php",
         "test:decoder": "phpunit tests/VinDecoderServiceTest.php",
+        "test:japanese": "phpunit tests/JapaneseChassisValidatorTest.php tests/JapaneseChassisDecoderTest.php tests/JapaneseChassisIntegrationTest.php",
         "cs": "phpcs --standard=PSR12 src tests",
         "cs:fix": "phpcbf --standard=PSR12 src tests"
     },
@@ -41,6 +42,7 @@
         "test:coverage": "Run all tests with code coverage report",
         "test:unit": "Run only validator tests",
         "test:decoder": "Run only decoder tests",
+        "test:japanese": "Run Japanese chassis number tests",
         "cs": "Check code style (PSR-12)",
         "cs:fix": "Fix code style issues automatically"
     }
